@@ -23,4 +23,3 @@ jobs:
       - run: npm ci
       - run: npm run typecheck --if-present || npx tsc --noEmit
       - run: npm run lint
-        continue-on-error: true # template hydration setState-in-effect, fix in next PR; typecheck is gating

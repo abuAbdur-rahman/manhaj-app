@@ -13,6 +13,8 @@ import { useEpisodeBySlug } from "@/hooks/useManhajQueries";
 export default function LectureScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const q = useEpisodeBySlug(slug ?? "");
+  const [dlProgress, setDlProgress] = useState<number | null>(null);
+  const [dlBusy, setDlBusy] = useState(false);
 
   if (q.isPending) {
     return (
@@ -30,8 +32,6 @@ export default function LectureScreen() {
   }
 
   const ep = q.data;
-  const [dlProgress, setDlProgress] = useState<number | null>(null);
-  const [dlBusy, setDlBusy] = useState(false);
   const localUri = getLocalUri(ep.id);
   const isDownloaded = !!localUri;
 
