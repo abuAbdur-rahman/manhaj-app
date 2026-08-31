@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Manhaj design tokens — ported from ../manhaj/app/globals.css */
+:root {
+  --forest-50: #f0f7f4;
+  --forest-500: #1a6b3c;
+  --forest-700: #0f4126;
+  --sand-50: #fafaf7;
+  --sand-100: #f5f3ec;
+  --clay-500: #a85c35;
+  --ink-900: #141a16;
+}
