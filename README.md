@@ -233,3 +233,4 @@ Total ~12–18 focused days, no deadline (`decisions.md`). Website work (Phase 4
 ---
 
 <p align="center"><em>Ilm, organized — now native.</em> · Built for the Nigerian Sunni/Salafi community.</p>
+
