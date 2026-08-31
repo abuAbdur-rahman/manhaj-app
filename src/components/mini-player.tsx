@@ -10,7 +10,8 @@ import { QueueSheet } from "@/components/queue-sheet";
 export function MiniPlayer() {
   const { currentEpisode, isPlaying, currentTime, duration, speed, queue } = usePlayerStore();
   const playbackState = usePlaybackState();
-  const [tick, setTick] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [tick, setTick] = useState(0); void tick;
   const [showQueue, setShowQueue] = useState(false);
 
   // tick sleep timer + sync progress
