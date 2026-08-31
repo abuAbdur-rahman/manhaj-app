@@ -6,7 +6,7 @@ import { playEpisode } from "@/lib/trackPlayer";
 
 export function QueueSheet({ onClose }: { onClose?: () => void }) {
   const ref = useRef<BottomSheet>(null);
-  const { queue, queueIndex, currentEpisode } = usePlayerStore();
+  const { queue, currentEpisode } = usePlayerStore();
   const snapPoints = useMemo(() => ["45%", "85%"], []);
 
   const onSelect = useCallback(
