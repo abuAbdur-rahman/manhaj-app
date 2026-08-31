@@ -1,10 +1,8 @@
 import { useFonts } from "expo-font";
 
 export function useLoadFonts() {
-  const [loaded, error] = useFonts({
-    // Geist is loaded via expo-font Google Fonts if needed;
-    // For now use system fonts + Noto via remote loading.
-    // TODO: bundle Geist/Noto TTFs under assets/fonts and map here.
-  });
+  // Phase-0: system fonts; Geist + Noto Naskh Arabic bundled in Phase-1
+  // when @expo-google-fonts/* is added. Keeping hook stable for _layout.
+  const [loaded, error] = useFonts({});
   return { loaded, error };
 }

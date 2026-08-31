@@ -7,7 +7,10 @@
     "icon": "./assets/images/icon.png",
     "scheme": "manhaj",
     "userInterfaceStyle": "automatic",
-    "platforms": ["android", "web"],
+    "platforms": [
+      "android",
+      "web"
+    ],
     "android": {
       "package": "com.manhaj.app",
       "edgeToEdgeEnabled": true,
@@ -45,25 +48,28 @@
         "expo-build-properties",
         {
           "android": {
-            "enableProguardInReleaseBuilds": true
+            "enableProguardInReleaseBuilds": true,
+            "enableMinifyInReleaseBuilds": true
           }
         }
       ]
     ],
     "updates": {
-      "url": "https://u.expo.dev/00000000-0000-0000-0000-000000000000",
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/fb209eff-f857-49be-8db2-9c2943aa48af"
     },
     "runtimeVersion": {
       "policy": "appVersion"
     },
-    "extra": {
-      "eas": {
-        "projectId": "00000000-0000-0000-0000-000000000000"
-      }
-    },
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "fb209eff-f857-49be-8db2-9c2943aa48af"
+      }
+    },
+    "owner": "abuabdrrahman"
   }
 }
