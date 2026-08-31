@@ -1,13 +1,5 @@
-/**
- * Native query persister stub.
- * Web uses IndexedDB (manhaj/lib/query-persister.ts -> idb).
- * Native persistence goes via SQLite/AsyncStorage in M4 offline.
- * For M1 (read-only screens) persistence is in-memory only; React Query
- * still caches in JS heap and refetches on focus via offlineFirst.
- *
- * When M4 lands, replace with expo-sqlite or @react-native-async-storage
- * backed Persister implementing @tanstack/react-query-persist-client Persister.
- */
+import { kvDelete, kvGet, kvSet } from "./db";
+
 type PersistedClientStub = unknown;
 type PersisterStub = {
   persistClient(p: PersistedClientStub): Promise<void>;
@@ -15,17 +7,39 @@ type PersisterStub = {
   removeClient(): Promise<void>;
 };
 
+const KEY = "rq-cache-v1";
+
+/**
+ * SQLite-backed query persister for offlineFirst.
+ * Uses kv table (manhaj.db) via sync helpers but wraps as async Persister
+ * to satisfy @tanstack/query-persist-client. Falls back to in-memory if SQLite unavailable.
+ */
 export function createNativePersister(): PersisterStub {
   let mem: PersistedClientStub | undefined;
   return {
     async persistClient(p: PersistedClientStub) {
       mem = p;
+      try {
+        kvSet(KEY, JSON.stringify(p));
+      } catch {
+        // keep mem fallback
+      }
     },
     async restoreClient() {
+      try {
+        const raw = kvGet(KEY);
+        if (raw) return JSON.parse(raw) as PersistedClientStub;
+      } catch {}
       return mem;
     },
     async removeClient() {
       mem = undefined;
+      try {
+        kvDelete(KEY);
+      } catch {}
     },
   };
 }
+
+// alias for queryClient wiring
+export const createSqlitePersister = createNativePersister;

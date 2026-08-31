@@ -171,7 +171,7 @@ export async function getScholarById(id: string): Promise<Scholar | null> {
     .select("*, episode_count:episodes(count), series_count:series(count)")
     .eq("id", id)
     .eq("is_active", true)
-    .single();
+    .maybeSingle();
   if (error) throw error;
   if (!data) return null;
   const row = data as unknown as Record<string, unknown>;
@@ -200,7 +200,11 @@ export async function searchEpisodes(query: string, language?: string): Promise<
   if (language) params.set("language", language);
   const res = await fetch(`${apiUrl}/api/search?${params.toString()}`);
   if (!res.ok) throw new Error(`Search failed: ${res.status}`);
-  const json = await res.json();
-  // API returns { data: Episode[] } or { episodes: ... } — handle both
-  return (json.data ?? json.episodes ?? json) as Episode[];
+  const json = (await res.json()) as unknown;
+  if (!json || typeof json !== "object") return [];
+  const j = json as Record<string, unknown>;
+  const raw = (j.data ?? j.episodes ?? j.results ?? []) as unknown;
+  if (!Array.isArray(raw)) return [];
+  // light shape guard — filter to objects with slug
+  return raw.filter((e) => e && typeof e === "object" && "slug" in (e as Record<string, unknown>)) as Episode[];
 }

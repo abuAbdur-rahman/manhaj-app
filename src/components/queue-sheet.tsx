@@ -33,11 +33,11 @@ export function QueueSheet({ onClose }: { onClose?: () => void }) {
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
         renderItem={({ item, index }) => {
-          const active = currentEpisode?.id === item.id || index === queueIndex;
+          const active = currentEpisode?.id === item.id;
           return (
             <Pressable
               onPress={() => onSelect(index)}
-              className={`py-3 border-b flex-row items-center justify-between ${active ? "bg-forest/5" : "border-sand-100"}`}
+              className={`py-3 border-b flex-row items-center justify-between ${active ? "bg-forest-50 border-forest-100" : "border-sand-100"}`}
             >
               <View className="flex-1 pr-3">
                 <Text numberOfLines={1} className={`text-sm ${active ? "text-forest font-semibold" : "text-ink"}`}>

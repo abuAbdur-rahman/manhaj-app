@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { Episode, Speed } from "@/types";
-import { getDb, kvGet, kvSet } from "@/lib/db";
+import { kvDelete, kvGet, kvSet } from "@/lib/db";
 
 const PLAYER_STATE_KEY = "player_state_v1";
 
@@ -14,7 +14,7 @@ type PersistedPlayer = {
 
 function loadPersisted(): PersistedPlayer | null {
   try {
-    const raw = kvGet(PLAYER_STATE_KEY) ?? getDb().getFirstSync<{ value: string }>(`SELECT value FROM player_state WHERE key = ?`, [PLAYER_STATE_KEY])?.value ?? null;
+    const raw = kvGet(PLAYER_STATE_KEY);
     if (!raw) return null;
     return JSON.parse(raw) as PersistedPlayer;
   } catch {
@@ -30,10 +30,13 @@ function persist(state: Pick<PlayerStore, "currentEpisode" | "queue" | "queueInd
       currentTime: state.currentTime,
       speed: state.speed,
     };
-    const raw = JSON.stringify(payload);
-    kvSet(PLAYER_STATE_KEY, raw);
-    getDb().runSync(`INSERT OR REPLACE INTO player_state (key, value) VALUES (?, ?)`, [PLAYER_STATE_KEY, raw]);
+    kvSet(PLAYER_STATE_KEY, JSON.stringify(payload));
   } catch {}
+}
+let persistTimeDebounce: ReturnType<typeof setTimeout> | null = null;
+function persistTimeDebounced(state: PlayerStore) {
+  if (persistTimeDebounce) clearTimeout(persistTimeDebounce);
+  persistTimeDebounce = setTimeout(() => persist(state), 5000);
 }
 
 interface PlayerStore {
@@ -61,24 +64,23 @@ interface PlayerStore {
   hydrate: () => void;
 }
 
-const persisted = loadPersisted();
-
 const episodeState = (episode: Episode) => ({
   currentEpisode: episode,
   currentTime: 0,
   duration: episode.duration_seconds ?? 0,
   isPlaying: true,
   isLoading: true,
+  sleepTimerRemaining: null as number | null,
 });
 
 export const usePlayerStore = create<PlayerStore>((set, get) => ({
-  currentEpisode: persisted?.currentEpisode ?? null,
-  queue: persisted?.queue ?? [],
-  queueIndex: persisted?.queueIndex ?? -1,
+  currentEpisode: null,
+  queue: [],
+  queueIndex: -1,
   isPlaying: false,
-  currentTime: persisted?.currentTime ?? 0,
-  duration: persisted?.currentEpisode?.duration_seconds ?? 0,
-  speed: persisted?.speed ?? (1 as Speed),
+  currentTime: 0,
+  duration: 0,
+  speed: 1 as Speed,
   isLoading: false,
   sleepTimerRemaining: null,
 
@@ -139,7 +141,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   setPlaying: (playing) => set({ isPlaying: playing }),
   setCurrentTime: (time) =>
     set((s) => {
-      persist({ ...s, currentTime: time } as PlayerStore);
+      persistTimeDebounced({ ...s, currentTime: time } as PlayerStore);
       return { currentTime: time };
     }),
   setDuration: (duration) => set({ duration }),
@@ -153,15 +155,17 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   tickSleepTimer: () => {
     const current = get().sleepTimerRemaining;
     if (current === null) return;
-    if (current <= 1) set({ sleepTimerRemaining: null, isPlaying: false });
-    else set({ sleepTimerRemaining: current - 1 });
+    if (current <= 1) {
+      set({ sleepTimerRemaining: null, isPlaying: false });
+      import("react-native-track-player").then((m) => m.default.pause().catch(() => {})).catch(() => {});
+    } else set({ sleepTimerRemaining: current - 1 });
   },
   clear: () =>
     set(() => {
       try {
-        getDb().runSync(`DELETE FROM player_state WHERE key = ?`, [PLAYER_STATE_KEY]);
-        kvSet(PLAYER_STATE_KEY, "");
+        kvDelete(PLAYER_STATE_KEY);
       } catch {}
+      if (persistTimeDebounce) clearTimeout(persistTimeDebounce);
       return {
         currentEpisode: null,
         queue: [],

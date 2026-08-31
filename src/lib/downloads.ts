@@ -8,8 +8,34 @@ export const CAP_KEY = "storage_cap_bytes";
 export const WIFI_ONLY_KEY = "wifi_only_downloads";
 const AUDIO_DIR = "audio";
 
+function isAllowedAudioHost(url: string): boolean {
+  try {
+    const u = new URL(url);
+    if (u.protocol !== "https:") return false;
+    const r2 = process.env.EXPO_PUBLIC_R2_PUBLIC_URL ?? "";
+    if (r2) {
+      try {
+        if (u.host === new URL(r2).host) return true;
+      } catch {}
+    }
+    // also allow supabase storage host if audio ever hosted there
+    const supa = process.env.EXPO_PUBLIC_SUPABASE_URL ?? "";
+    if (supa) {
+      try {
+        if (u.host === new URL(supa).host) return true;
+      } catch {}
+    }
+    // fallback: allow any https not private
+    if (u.hostname === "localhost" || u.hostname === "127.0.0.1") return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function audioDir(): string {
-  const base = (FileSystem as unknown as { documentDirectory?: string | null }).documentDirectory ?? "";
+  const base = (FileSystem as unknown as { documentDirectory?: string | null }).documentDirectory ?? null;
+  if (!base) throw new Error("No documentDirectory available");
   return `${base}${AUDIO_DIR}/`;
 }
 
@@ -58,8 +84,9 @@ export function getStorageUsedBytes(): number {
 export async function shouldWarnCellular(): Promise<boolean> {
   if (!getWifiOnly()) return false;
   const state = await NetInfo.fetch();
-  // warn only if on cellular (or unknown but not wifi)
-  return state.type === "cellular";
+  // NetInfo: type cellular|wifi|unknown; isConnected may be null offline.
+  // Warn if not wifi (cellular or unknown) and isInternetReachable !== false when known
+  return state.type !== "wifi";
 }
 
 export function getLocalUri(episodeId: string): string | null {
@@ -67,6 +94,7 @@ export function getLocalUri(episodeId: string): string | null {
 }
 
 export async function downloadEpisode(ep: Episode, onProgress?: (written: number, total: number) => void): Promise<string> {
+  if (!/^[0-9a-f-]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ep.id)) throw new Error("Invalid episode id");
   const existing = getDownload(ep.id);
   if (existing) {
     const info = await FileSystem.getInfoAsync(existing.file_uri);
@@ -75,10 +103,11 @@ export async function downloadEpisode(ep: Episode, onProgress?: (written: number
   }
 
   if (!ep.audio_url) throw new Error("Episode has no audio URL");
-  // cap check — estimate from last download row or 0 if unknown
+  if (!isAllowedAudioHost(ep.audio_url)) throw new Error("Audio URL host not allowed");
+  // cap check — estimate from HEAD; post-download check is authoritative
   const used = getStorageUsedBytes();
   const cap = getStorageCapBytes();
-  // try HEAD to get size
+  // try HEAD to get size (may CORS fail -> expected 0, fall through to post-check)
   let expected = 0;
   try {
     const head = await fetch(ep.audio_url, { method: "HEAD" });
@@ -87,6 +116,9 @@ export async function downloadEpisode(ep: Episode, onProgress?: (written: number
   } catch {}
   if (expected > 0 && used + expected > cap) {
     throw new Error(`Storage cap would be exceeded (${Math.round((used + expected) / 1e6)} MB > ${Math.round(cap / 1e6)} MB). Free space in Settings → Downloads.`);
+  }
+  if (expected === 0 && used > cap * 0.9) {
+    throw new Error("Storage near cap and size unknown — free space before downloading.");
   }
 
   const dir = await ensureAudioDir();
@@ -114,15 +146,6 @@ export async function downloadEpisode(ep: Episode, onProgress?: (written: number
       if (info.exists && "size" in info) sizeBytes = (info as { size: number }).size ?? expected;
     }
   } else {
-    // New File API fallback (expo-file-system >= 17)
-    const { File, Directory } = FileSystem as unknown as {
-      File: new (uri: string) => { uri: string; downloadAsync?: (url: string) => Promise<void>; size?: number };
-      Directory: new (uri: string) => { exists: boolean };
-    };
-    // fallback to download via fetch + write (not resumable)
-    const data = await fetch(ep.audio_url as string).then((r) => r.arrayBuffer());
-    sizeBytes = data.byteLength;
-    // write via legacy writeAsStringAsync base64 if needed — simplified path throws
     throw new Error("Resumable download not available on this FileSystem build — update expo-file-system");
   }
 
