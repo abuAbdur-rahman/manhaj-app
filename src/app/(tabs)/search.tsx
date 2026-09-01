@@ -62,7 +62,7 @@ export default function SearchScreen() {
             </Pressable>
           ))}
         </View>
-        <Text className="text-xs text-ink-400">Uses {process.env.EXPO_PUBLIC_API_URL ?? "manhaj-sunnah.vercel.app"}/api/search · debounced 320ms</Text>
+        <Text className="text-xs text-ink-400 dark:text-ink-400">Search powered by manhaj-sunnah.vercel.app/api/search</Text>
       </View>
 
       {!showResults ? (

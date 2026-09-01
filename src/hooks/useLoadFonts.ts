@@ -1,8 +1,5 @@
-import { useFonts } from "expo-font";
-
 export function useLoadFonts() {
-  // Phase-0: system fonts; Geist + Noto Naskh Arabic bundled in Phase-1
-  // when @expo-google-fonts/* is added. Keeping hook stable for _layout.
-  const [loaded, error] = useFonts({});
-  return { loaded, error };
+  // Fonts are bundled natively via the expo-font config plugin (app.json),
+  // so there is nothing to load at runtime.
+  return { loaded: true, error: null };
 }

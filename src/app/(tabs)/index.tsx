@@ -48,16 +48,18 @@ export default function HomeScreen() {
                 <EmptyState title="No featured series" description="Check back soon." />
               ) : (
                 <View style={{ gap: 12 }}>
-                  {featured.data.map((s) => (
-                    <Link key={s.id} href={`/scholars/${s.scholar?.slug ?? ""}/series/${s.slug}` as never} asChild>
-                      <Pressable accessibilityRole="button" accessibilityLabel={`${s.title} by ${s.scholar?.name ?? "Series"}`} hitSlop={8} style={{ minHeight: 48 }} className="rounded-2xl border border-sand-200 bg-white p-4 active:opacity-80 dark:border-ink-800 dark:bg-ink-900">
-                        <Text className="text-xs font-semibold uppercase tracking-widest text-forest-600 dark:text-forest-100">{s.scholar?.name ?? "Series"}</Text>
-                        <Text className="mt-1 text-base font-bold text-ink dark:text-ink-100">{s.title}</Text>
-                        {s.description ? <Text className="mt-1 text-sm leading-5 text-ink-600 dark:text-ink-400" numberOfLines={2}>{s.description}</Text> : null}
-                        <Text className="mt-2 text-xs font-medium text-ink-400">{s.episode_count ?? 0} lectures</Text>
-                      </Pressable>
-                    </Link>
-                  ))}
+                  {featured.data.map((s) =>
+                    s.scholar?.slug ? (
+                      <Link key={s.id} href={`/scholars/${s.scholar.slug}/series/${s.slug}` as never} asChild>
+                        <Pressable accessibilityRole="button" accessibilityLabel={`${s.title} by ${s.scholar?.name ?? "Series"}`} hitSlop={8} style={{ minHeight: 48 }} className="rounded-2xl border border-sand-200 bg-white p-4 active:opacity-80 dark:border-ink-800 dark:bg-ink-900">
+                          <Text className="text-xs font-semibold uppercase tracking-widest text-forest-600 dark:text-forest-100">{s.scholar?.name ?? "Series"}</Text>
+                          <Text className="mt-1 text-base font-bold text-ink dark:text-ink-100">{s.title}</Text>
+                          {s.description ? <Text className="mt-1 text-sm leading-5 text-ink-600 dark:text-ink-400" numberOfLines={2}>{s.description}</Text> : null}
+                          <Text className="mt-2 text-xs font-medium text-ink-400">{s.episode_count ?? 0} lectures</Text>
+                        </Pressable>
+                      </Link>
+                    ) : null,
+                  )}
                 </View>
               )}
             </View>
@@ -110,9 +112,6 @@ export default function HomeScreen() {
         }
         renderItem={({ item: e }) => <AudioCard episode={e} />}
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-        ListEmptyComponent={
-          !recent.isPending && !recent.isError && !recent.data?.length ? null : undefined
-        }
       />
     </SafeAreaView>
   );

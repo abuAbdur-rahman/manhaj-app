@@ -19,7 +19,7 @@ export default function SeriesDetailScreen() {
 
   if (q.isPending) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink">
+      <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink-950">
         <View className="gap-3 p-6">
           <AudioCardSkeleton />
           <AudioCardSkeleton />
@@ -29,7 +29,7 @@ export default function SeriesDetailScreen() {
   }
   if (q.isError || !q.data) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink">
+      <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink-950">
         <ErrorState message={q.isError ? "Failed to load series" : "Series not found"} onRetry={() => q.refetch()} />
       </SafeAreaView>
     );
@@ -38,7 +38,7 @@ export default function SeriesDetailScreen() {
   const { series, episodes } = q.data;
 
   return (
-    <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink">
+    <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink-950">
       <FlatList
         data={episodes}
         keyExtractor={(e) => e.id}
@@ -46,10 +46,10 @@ export default function SeriesDetailScreen() {
         contentContainerClassName="pb-10"
         ListHeaderComponent={
           <View className="gap-2 bg-white dark:bg-ink-800 px-6 py-6 border-b border-sand-200 dark:border-ink-800 mb-6">
-            <Text className="text-xs font-semibold uppercase tracking-widest text-forest-600 dark:text-forest-400">{series.scholar?.name}</Text>
+            <Text className="text-xs font-semibold uppercase tracking-widest text-forest-600 dark:text-forest-100">{series.scholar?.name}</Text>
             <Text className="text-xl font-bold text-ink dark:text-white">{series.title}</Text>
-            {series.description ? <Text className="text-sm leading-5 text-ink-600 dark:text-ink-300">{series.description}</Text> : null}
-            <Text className="text-xs text-ink-400 dark:text-ink-500">{episodes.length} lectures</Text>
+            {series.description ? <Text className="text-sm leading-5 text-ink-600 dark:text-ink-100">{series.description}</Text> : null}
+            <Text className="text-xs text-ink-400 dark:text-ink-400">{series.episode_count ?? episodes.length} lectures</Text>
           </View>
         }
         ListEmptyComponent={<View className="px-6"><EmptyState title="No lectures in this series" /></View>}

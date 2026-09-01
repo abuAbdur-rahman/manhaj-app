@@ -1,23 +1,26 @@
 import TrackPlayer, { Event } from "@rntp/player";
 
+import { logAppError } from "@/lib/logError";
+import { usePlayerStore } from "@/store/player";
+
 export function registerBackgroundPlayback() {
   TrackPlayer.registerPlaybackSession(() => {
-    TrackPlayer.addEventListener(Event.RemotePlay, () => TrackPlayer.play());
-    TrackPlayer.addEventListener(Event.RemotePause, () => TrackPlayer.pause());
-    TrackPlayer.addEventListener(Event.RemoteNext, () => TrackPlayer.skipToNext());
-    TrackPlayer.addEventListener(Event.RemotePrevious, () => TrackPlayer.skipToPrevious());
-    TrackPlayer.addEventListener(Event.RemoteSeek, (e: { position: number }) => TrackPlayer.seekTo(e.position));
-    TrackPlayer.addEventListener(Event.RemoteStop, () => {
-      try { TrackPlayer.pause(); } catch {}
-    });
-    (TrackPlayer as unknown as { addEventListener: (ev: string, cb: (e: Record<string, unknown>) => void) => void }).addEventListener("remote-duck" as unknown as Event, (e: Record<string, unknown>) => {
+    // Keep the Zustand store in sync with native auto-advance and
+    // notification/headset transport controls (native handling).
+    TrackPlayer.addEventListener(Event.MediaItemTransition, (e) => {
       try {
-        if (e["paused"]) TrackPlayer.pause();
-        else if (e["permanent"] === false) TrackPlayer.play();
+        const { setActiveIndex, setPlaying } = usePlayerStore.getState();
+        if (typeof e.index === "number" && e.index >= 0) setActiveIndex(e.index);
+        if (e.item !== null) setPlaying(true);
+      } catch {}
+    });
+    TrackPlayer.addEventListener(Event.IsPlayingChanged, (e) => {
+      try {
+        usePlayerStore.getState().setPlaying(e.playing);
       } catch {}
     });
     TrackPlayer.addEventListener(Event.PlaybackError, (e) => {
-      try { console.warn("[PlaybackService] PlaybackError", (e as unknown as { error?: unknown }).error ?? e); } catch {}
+      logAppError({ message: e.message, stack: undefined, route: "PlaybackService.PlaybackError" });
     });
   });
 }

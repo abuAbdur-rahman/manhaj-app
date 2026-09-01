@@ -18,14 +18,14 @@ export default function LectureScreen() {
 
   if (q.isPending) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-50">
-        <View className="h-32 bg-sand-100" />
+      <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink-950">
+        <View className="h-32 bg-sand-100 dark:bg-ink-800" />
       </SafeAreaView>
     );
   }
   if (q.isError || !q.data) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-50">
+      <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink-950">
         <ErrorState message={q.isError ? "Failed to load lecture" : "Lecture not found"} onRetry={() => q.refetch()} />
       </SafeAreaView>
     );
@@ -49,8 +49,8 @@ export default function LectureScreen() {
         const { logPlayLocal } = await import("@/lib/db");
         logPlayLocal(ep.id, localUri ? "offline" : "stream");
       } catch {}
-    } catch (e) {
-      Alert.alert("Playback failed", e instanceof Error ? e.message : String(e));
+    } catch {
+      Alert.alert("Playback failed", "Something went wrong. Please try again.");
     }
   };
 
@@ -73,12 +73,19 @@ export default function LectureScreen() {
     setDlBusy(true);
     setDlProgress(0);
     try {
+      let lastStep = -1;
       await downloadEpisode(ep, (w, t) => {
-        if (t > 0) setDlProgress(Math.round((w / t) * 100));
+        if (t > 0) {
+          const pct = Math.round((w / t) * 100);
+          if (pct - lastStep >= 5 || pct === 100) {
+            lastStep = pct;
+            setDlProgress(pct);
+          }
+        }
       });
       setDlProgress(100);
-    } catch (e) {
-      Alert.alert("Download failed", e instanceof Error ? e.message : String(e));
+    } catch {
+      Alert.alert("Download failed", "Something went wrong. Please try again.");
     } finally {
       setDlBusy(false);
       setTimeout(() => setDlProgress(null), 800);
@@ -123,7 +130,7 @@ export default function LectureScreen() {
                   <Text className="text-sm font-semibold text-ink dark:text-ink-100">{dlBusy ? (dlProgress !== null ? `${dlProgress}%` : "Downloading…") : "Download"}</Text>
                 </Pressable>
               ) : (
-                <View className="rounded-full border border-forest-200 bg-forest-50 px-4 py-2.5 dark:border-forest-900 dark:bg-forest-900"><Text className="text-xs font-semibold text-forest-700 dark:text-forest-100">Downloaded</Text></View>
+                <View className="rounded-full border border-forest-100 bg-forest-50 px-4 py-2.5 dark:border-forest-900 dark:bg-forest-900"><Text className="text-xs font-semibold text-forest-700 dark:text-forest-100">Downloaded</Text></View>
               )}
               <Pressable onPress={handleShare} accessibilityRole="button" accessibilityLabel="Share lecture" hitSlop={8} style={{ minHeight: 48, justifyContent: 'center' }} className="rounded-full border border-sand-200 bg-white px-4 py-2.5 active:opacity-80 dark:border-ink-700 dark:bg-ink-800">
                 <Text className="text-sm font-semibold text-ink dark:text-ink-100">Share</Text>

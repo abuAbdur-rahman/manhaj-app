@@ -1,4 +1,4 @@
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import NetInfo from "@react-native-community/netinfo";
 import type { Episode } from "@/types";
 import { getDb, kvGet, kvSet } from "@/lib/db";
@@ -8,7 +8,7 @@ export const CAP_KEY = "storage_cap_bytes";
 export const WIFI_ONLY_KEY = "wifi_only_downloads";
 const AUDIO_DIR = "audio";
 
-function isAllowedAudioHost(url: string): boolean {
+export function isAllowedAudioHost(url: string): boolean {
   try {
     const u = new URL(url);
     if (u.protocol !== "https:") return false;
@@ -33,7 +33,7 @@ function isAllowedAudioHost(url: string): boolean {
 }
 
 function audioDir(): string {
-  const base = (FileSystem as unknown as { documentDirectory?: string | null }).documentDirectory ?? null;
+  const base = FileSystem.documentDirectory ?? null;
   if (!base) throw new Error("No documentDirectory available");
   return `${base}${AUDIO_DIR}/`;
 }
@@ -126,56 +126,12 @@ export async function downloadEpisode(ep: Episode, onProgress?: (written: number
   const dir = await ensureAudioDir();
   const dest = `${dir}${ep.id}.mp3`;
 
-  // Legacy API: FileSystem.createDownloadResumable (SDK 57 still supports)
-  const FS = FileSystem as unknown as {
-    createDownloadResumable?: (
-      url: string,
-      fileUri: string,
-      opts: Record<string, unknown>,
-      cb?: (p: { totalBytesWritten: number; totalBytesExpectedToWrite: number }) => void,
-    ) => { downloadAsync: () => Promise<{ uri: string } | null> };
-  };
-
-  let resUri: string | null = null;
-  let sizeBytes = expected;
-
-  // SDK 57: primary is expo-file-system/legacy createDownloadResumable; new FileSystem.File API is next migration.
-  // Try legacy import guard, fallback to FileSystem.createDownloadResumable via cast if present.
-  const tryLegacy = async (): Promise<{ uri: string | null }> => {
-    try {
-      // @ts-ignore legacy entry may not be installed until migrate
-      const Legacy = await import("expo-file-system/legacy").catch(() => null as unknown as null);
-      const LFS = Legacy as unknown as typeof FS | null;
-      if (LFS?.createDownloadResumable) {
-        const dl = LFS.createDownloadResumable(ep.audio_url as string, dest, {}, (p) => onProgress?.(p.totalBytesWritten, p.totalBytesExpectedToWrite));
-        const res = await dl.downloadAsync();
-        return { uri: res?.uri ?? null };
-      }
-    } catch {}
-    return { uri: null };
-  };
-
-  if (FS.createDownloadResumable) {
-    const dl = FS.createDownloadResumable(ep.audio_url as string, dest, {}, (p) => onProgress?.(p.totalBytesWritten, p.totalBytesExpectedToWrite));
-    const res = await dl.downloadAsync();
-    resUri = res?.uri ?? null;
-    if (resUri) {
-      const info = await FileSystem.getInfoAsync(resUri);
-      if (info.exists && "size" in info) sizeBytes = (info as { size: number }).size ?? expected;
-    }
-  } else {
-    const leg = await tryLegacy();
-    if (leg.uri) {
-      resUri = leg.uri;
-      const info = await FileSystem.getInfoAsync(resUri);
-      if (info.exists && "size" in info) sizeBytes = (info as { size: number }).size ?? expected;
-    } else {
-      throw new Error("Resumable download not available on this FileSystem build — update expo-file-system");
-    }
-  }
-
+  const dl = FileSystem.createDownloadResumable(ep.audio_url, dest, {}, (p) => onProgress?.(p.totalBytesWritten, p.totalBytesExpectedToWrite));
+  const res = await dl.downloadAsync();
+  const resUri = res?.uri ?? null;
   if (!resUri) throw new Error("Download failed — no file returned");
 
+  let sizeBytes = expected;
   const dlInfo = await FileSystem.getInfoAsync(resUri);
   if (dlInfo.exists && "size" in dlInfo) {
     const sz = (dlInfo as { size?: number }).size;

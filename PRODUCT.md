@@ -24,7 +24,7 @@ Success: a listener can Home → Scholar → Series → Lecture on device, strea
 
 ## Positioning
 
-Not a web wrapper. The meaningful difference over the PWA is the **real Android foreground service** (`react-native-track-player` with `PlaybackService` for RemotePlay/Pause/Next/Seek/Duck + `FOREGROUND_SERVICE`/`FOREGROUND_SERVICE_MEDIA_PLAYBACK` and `POST_NOTIFICATIONS` once on first playback) plus **non-evictable, resumable offline** (`expo-file-system` `createDownloadResumable` → `documentDirectory/audio/<id>.mp3` + `expo-sqlite` `downloads` table) and queue/last-episode persistence that the browser Cache API/SQLite + Howler PWA cannot guarantee. Same public data — stronger delivery.
+Not a web wrapper. The meaningful difference over the PWA is the **real Android foreground service** (`@rntp/player` — the maintained react-native-track-player v5 fork — with `PlaybackService` for RemotePlay/Pause/Next/Seek/Duck + `FOREGROUND_SERVICE`/`FOREGROUND_SERVICE_MEDIA_PLAYBACK` and `POST_NOTIFICATIONS` once on first playback) plus **non-evictable, resumable offline** (`expo-file-system` `createDownloadResumable` → `documentDirectory/audio/<id>.mp3` + `expo-sqlite` `downloads` table) and queue/last-episode persistence that the browser Cache API/SQLite + Howler PWA cannot guarantee. Same public data — stronger delivery.
 
 A neighboring product could not truthfully copy the sideload + OTA channel (preview/production) and hybrid data-path discipline without the same backend reuse.
 
@@ -50,13 +50,13 @@ A neighboring product could not truthfully copy the sideload + OTA channel (prev
 
 **Confirmed capabilities:**
 - Read-only browsing with React Query cached-first + background refetch on focus + pull-to-refresh; persist via SQLite/AsyncStorage.
-- Playback via `react-native-track-player` + Zustand `store/player.ts` port; speeds 0.75/1/1.25/1.5/2, sleep timer, MiniPlayer driven by `usePlaybackState`/`useProgress`, `@gorhom/bottom-sheet` expand, artwork `series.cover_url ?? scholar.photo_url`.
+- Playback via `@rntp/player` + Zustand `store/player.ts` port; speeds 0.75/1/1.25/1.5/2, sleep timer, MiniPlayer driven by `useIsPlaying`/`useProgress`, `@gorhom/bottom-sheet` expand, artwork `series.cover_url ?? scholar.photo_url`.
 - Offline downloads lifecycle: per-episode size via R2 HEAD, progress/pause/resume/retry/remove, 2 GB default cap enforced (Settings adjustable, shows used/available), block with "Manage downloads" CTA when exceeded; local playback via `file://` URI.
 - Search debounced via Next API; hybrid reuse enforced — no Supabase RPC/Edge Function duplication.
 - Sharing, lightweight analytics/crash logging, pull-to-refresh/empty/error/offline states per screen.
 
 **Constraints (immutable/preserved):**
-- `android.package: com.manhaj.app` immutable after first distribution; launcher display name `Manhaj Sunnah`; `version` semver from `0.1.0`; scheme `manhaj`; Expo latest stable SDK at scaffold (54/55 family, pin `sdkVersion`); `expo-dev-client` day one; `track-player` requires custom dev client — **no Expo Go** (dev-build-only via EAS cloud).
+- `android.package: com.manhaj.app` immutable after first distribution; launcher display name `Manhaj Sunnah`; `version` semver from `0.1.0`; scheme `manhaj`; Expo latest stable SDK at scaffold (SDK 57 family, pin `sdkVersion`); `expo-dev-client` day one; `@rntp/player` requires custom dev client — **no Expo Go** (dev-build-only via EAS cloud).
 - Android only (no iOS scaffold), no listener auth (pure anon RLS), no push notifications entirely (dropped in grill Batch 8), no deep links/App Links (`assetlinks.json` skipped), no admin in app.
 - Types: copy, no shared package; app in `./manhaj-app` (not `apps/mobile`).
 - Env: `EXPO_PUBLIC_SUPABASE_URL` + `EXPO_PUBLIC_SUPABASE_ANON_KEY` + `EXPO_PUBLIC_API_URL` (public by design; never `service_role` in app).

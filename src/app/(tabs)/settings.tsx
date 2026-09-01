@@ -28,7 +28,7 @@ export default function SettingsScreen() {
   useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
 
   return (
-    <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink">
+    <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink-950">
       <ScrollView contentContainerStyle={{ padding: 24, gap: 16, paddingBottom: Math.max(40, insets.bottom + 24) }}>
         <View className="gap-1">
           <Text className="text-xl font-bold text-ink dark:text-white">Settings</Text>
@@ -38,7 +38,7 @@ export default function SettingsScreen() {
         <View className="rounded-2xl border border-sand-200 dark:border-ink-800 bg-white dark:bg-ink-800 p-4 gap-3">
           <Text className="text-sm font-semibold text-ink dark:text-white">Appearance</Text>
           <Text className="text-xs leading-4 text-ink-500 dark:text-ink-400">Theme persists to SQLite (system follows device).</Text>
-          <View accessible accessibilityRole="radiogroup" className="flex-row flex-wrap gap-2">
+          <View accessibilityRole="radiogroup" className="flex-row flex-wrap gap-2">
             {(["system", "light", "dark"] as ThemePreference[]).map((v) => {
               const active = themePref === v;
               return (
@@ -83,12 +83,12 @@ export default function SettingsScreen() {
             <Pressable onPress={() => Linking.openURL(process.env.EXPO_PUBLIC_SUPPORT_WHATSAPP_URL ?? "https://wa.me/2340000000000")} accessibilityRole="button" hitSlop={8} style={{ minHeight: 48, justifyContent: 'center' }} className="rounded-full bg-forest-600 px-5 py-2.5"><Text className="text-xs font-semibold text-white">WhatsApp</Text></Pressable>
             <Pressable onPress={() => Linking.openURL(process.env.EXPO_PUBLIC_SUPPORT_TELEGRAM_URL ?? "https://t.me/manhajsupport")} accessibilityRole="button" hitSlop={8} style={{ minHeight: 48, justifyContent: 'center' }} className="rounded-full border border-sand-200 dark:border-ink-700 bg-white dark:bg-ink-900 px-5 py-2.5"><Text className="text-xs font-semibold text-ink dark:text-white">Telegram</Text></Pressable>
           </View>
-          <Text className="text-xs text-ink-400 dark:text-ink-500">Set EXPO_PUBLIC_SUPPORT_WHATSAPP_URL / TELEGRAM_URL to override.</Text>
+          <Text className="text-xs text-ink-400 dark:text-ink-400">Set EXPO_PUBLIC_SUPPORT_WHATSAPP_URL / TELEGRAM_URL to override.</Text>
         </View>
 
         <View className="rounded-2xl border border-sand-200 dark:border-ink-800 bg-white dark:bg-ink-800 p-4 gap-3">
           <Text className="text-sm font-semibold text-ink dark:text-white">About</Text>
-          <Text className="text-sm leading-5 text-ink-600 dark:text-ink-300">Ilm, organized — Nigerian Sunni/Salafi lectures. Offline files stay until you delete them. Background playback via track-player foreground service.</Text>
+          <Text className="text-sm leading-5 text-ink-600 dark:text-ink-100">Ilm, organized — Nigerian Sunni/Salafi lectures. Offline files stay until you delete them. Background playback via track-player foreground service.</Text>
           <View className="flex-row flex-wrap gap-2 pt-2">
             <Pressable onPress={() => Linking.openURL("https://manhaj-sunnah.vercel.app/privacy")} accessibilityRole="button" hitSlop={8} style={{ minHeight: 48, justifyContent: 'center' }} className="rounded-full border border-sand-200 dark:border-ink-700 bg-sand-50 dark:bg-ink-900 px-5 py-2.5"><Text className="text-xs font-semibold text-ink dark:text-white">Privacy</Text></Pressable>
             <Pressable onPress={() => Linking.openURL("https://manhaj-sunnah.vercel.app/download")} accessibilityRole="button" hitSlop={8} style={{ minHeight: 48, justifyContent: 'center' }} className="rounded-full border border-sand-200 dark:border-ink-700 bg-sand-50 dark:bg-ink-900 px-5 py-2.5"><Text className="text-xs font-semibold text-ink dark:text-white">Download page</Text></Pressable>

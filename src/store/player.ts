@@ -3,6 +3,7 @@ import type { Episode, Speed } from "@/types";
 import { kvDelete, kvGet, kvSet } from "@/lib/db";
 
 const PLAYER_STATE_KEY = "player_state_v1";
+const PLAYER_POSITION_KEY = "player_position_v1";
 
 type PersistedPlayer = {
   currentEpisode: Episode | null;
@@ -35,6 +36,11 @@ function persist(state: Pick<PlayerStore, "currentEpisode" | "queue" | "queueInd
 }
 let persistTimeDebounce: ReturnType<typeof setTimeout> | null = null;
 let lastPersistAt = 0;
+function persistPosition(time: number, speed: Speed) {
+  try {
+    kvSet(PLAYER_POSITION_KEY, JSON.stringify({ currentTime: time, speed }));
+  } catch {}
+}
 export function flushPositionPersist() {
   if (persistTimeDebounce) {
     clearTimeout(persistTimeDebounce);
@@ -44,26 +50,26 @@ export function flushPositionPersist() {
   try {
     const s = usePlayerStore.getState();
     persist(s);
+    persistPosition(s.currentTime, s.speed);
     lastPersistAt = Date.now();
   } catch {}
 }
-function persistTimeDebounced(state: PlayerStore) {
+function persistTimeDebounced(state: Pick<PlayerStore, "currentTime" | "speed">) {
   const now = Date.now();
   const elapsed = now - lastPersistAt;
   // throttle: persist at most every 5s during continuous playback, otherwise debounce 5s
+  const doPersist = () => {
+    persistPosition(state.currentTime, state.speed);
+    lastPersistAt = Date.now();
+  };
   if (elapsed >= 5000) {
     if (persistTimeDebounce) clearTimeout(persistTimeDebounce);
     persistTimeDebounce = null;
-    persist(state);
-    lastPersistAt = now;
+    doPersist();
     return;
   }
   if (persistTimeDebounce) return;
-  persistTimeDebounce = setTimeout(() => {
-    persist(state);
-    lastPersistAt = Date.now();
-    persistTimeDebounce = null;
-  }, 5000);
+  persistTimeDebounce = setTimeout(doPersist, 5000);
 }
 
 interface PlayerStore {
@@ -78,6 +84,7 @@ interface PlayerStore {
   sleepTimerRemaining: number | null;
   setEpisode: (episode: Episode) => void;
   setQueue: (episodes: Episode[], startIndex?: number) => void;
+  setActiveIndex: (index: number) => void;
   playNext: () => boolean;
   playPrevious: () => boolean;
   setPlaying: (playing: boolean) => void;
@@ -114,7 +121,17 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   hydrate: () => {
     const p = loadPersisted();
     if (!p) return;
-    set({ currentEpisode: p.currentEpisode, queue: p.queue, queueIndex: p.queueIndex, currentTime: p.currentTime, speed: p.speed, duration: p.currentEpisode?.duration_seconds ?? 0 });
+    let currentTime = p.currentTime;
+    let speed = p.speed;
+    try {
+      const raw = kvGet(PLAYER_POSITION_KEY);
+      if (raw) {
+        const pos = JSON.parse(raw) as { currentTime?: number; speed?: Speed };
+        if (typeof pos.currentTime === "number") currentTime = pos.currentTime;
+        if (pos.speed) speed = pos.speed;
+      }
+    } catch {}
+    set({ currentEpisode: p.currentEpisode, queue: p.queue, queueIndex: p.queueIndex, currentTime, speed, duration: p.currentEpisode?.duration_seconds ?? 0 });
   },
 
   setEpisode: (episode) =>
@@ -130,6 +147,18 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     const safeIndex = Math.min(Math.max(startIndex, 0), episodes.length - 1);
     set((s) => {
       const next = { ...episodeState(episodes[safeIndex]), queue: episodes, queueIndex: safeIndex } as Partial<PlayerStore>;
+      const merged = { ...s, ...next } as PlayerStore;
+      persist(merged);
+      return next;
+    });
+  },
+
+  setActiveIndex: (index) => {
+    const { queue } = get();
+    if (index < 0 || index >= queue.length) return;
+    const ep = queue[index];
+    set((s) => {
+      const next = { ...episodeState(ep), queueIndex: index } as Partial<PlayerStore>;
       const merged = { ...s, ...next } as PlayerStore;
       persist(merged);
       return next;
@@ -166,17 +195,17 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   },
 
   setPlaying: (playing) => set({ isPlaying: playing }),
-  setCurrentTime: (time) =>
-    set((s) => {
-      persistTimeDebounced({ ...s, currentTime: time } as PlayerStore);
-      return { currentTime: time };
-    }),
+  setCurrentTime: (time) => {
+    set({ currentTime: time });
+    const s = get();
+    persistTimeDebounced({ currentTime: time, speed: s.speed });
+  },
   setDuration: (duration) => set({ duration }),
-  setSpeed: (speed) =>
-    set((s) => {
-      persist({ ...s, speed } as PlayerStore);
-      return { speed };
-    }),
+  setSpeed: (speed) => {
+    set({ speed });
+    const s = get();
+    persistTimeDebounced({ currentTime: s.currentTime, speed });
+  },
   setLoading: (loading) => set({ isLoading: loading }),
   setSleepTimer: (seconds) => set({ sleepTimerRemaining: seconds }),
   tickSleepTimer: () => {

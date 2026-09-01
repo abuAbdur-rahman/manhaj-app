@@ -17,7 +17,7 @@ export default function ScholarsScreen() {
 
   if (q.isPending) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink">
+      <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink-950">
         <View className="gap-3 p-6">
           <View className="h-20 rounded-2xl bg-sand-100 dark:bg-ink-800" />
           <View className="h-20 rounded-2xl bg-sand-100 dark:bg-ink-800" />
@@ -28,21 +28,21 @@ export default function ScholarsScreen() {
   }
   if (q.isError) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink">
+      <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink-950">
         <ErrorState message="Failed to load scholars" onRetry={() => q.refetch()} />
       </SafeAreaView>
     );
   }
   if (!q.data?.length) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink">
+      <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink-950">
         <EmptyState title="No scholars yet" description="Scholars will appear here once published." />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink">
+    <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink-950">
       <FlatList
         data={q.data}
         keyExtractor={(s) => s.id}
@@ -57,20 +57,22 @@ export default function ScholarsScreen() {
               <View className="flex-1">
                 <Text className="text-sm font-semibold text-ink dark:text-white">{item.name}</Text>
                 <Text className="text-xs text-ink-500 dark:text-ink-400">
-                  {[item.series_count, item.episode_count].filter((n) => n !== undefined).join(" · ") || "Active"}
-                  {item.series_count !== undefined ? ` series` : ""} {item.episode_count !== undefined ? `· ${item.episode_count} lectures` : ""}
+                  {[
+                    item.series_count !== undefined ? `${item.series_count} series` : null,
+                    item.episode_count !== undefined ? `${item.episode_count} lectures` : null,
+                  ].filter(Boolean).join(" · ") || "Active"}
                 </Text>
                 {item.languages?.length ? (
-                  <Text className="mt-0.5 text-xs font-medium uppercase text-forest-600 dark:text-forest-400">
+                  <Text className="mt-0.5 text-xs font-medium uppercase text-forest-600 dark:text-forest-100">
                     {item.languages.join(" · ")}
                   </Text>
                 ) : null}
               </View>
-              <Text className="text-ink-300 dark:text-ink-500">›</Text>
+              <Text className="text-ink-400 dark:text-ink-400">›</Text>
             </Pressable>
           </Link>
         )}
-        ListHeaderComponent={<Text className="mb-1 text-sm font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-500">Scholars</Text>}
+        ListHeaderComponent={<Text className="mb-1 text-sm font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-400">Scholars</Text>}
       />
     </SafeAreaView>
   );

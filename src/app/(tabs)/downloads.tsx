@@ -42,7 +42,7 @@ export default function DownloadsScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink">
+    <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink-950">
       <View className="gap-1 border-b border-sand-200 dark:border-ink-800 bg-white dark:bg-ink-800 px-6 py-6">
         <Text className="text-xl font-bold text-ink dark:text-white">Downloads</Text>
         <Text className="text-sm text-ink-500 dark:text-ink-400">{fmtBytes(used)} / {fmtBytes(cap)} used · 2 GB default cap</Text>
@@ -62,7 +62,7 @@ export default function DownloadsScreen() {
             <View className="rounded-2xl border border-sand-200 dark:border-ink-800 bg-white dark:bg-ink-800 p-4 gap-2">
               <Text className="text-sm font-semibold text-ink dark:text-white" numberOfLines={2}>{item.title}</Text>
               <Text className="text-xs text-ink-500 dark:text-ink-400">{item.scholar_name} · {fmtBytes(item.file_size_bytes)} · {new Date(item.downloaded_at).toLocaleDateString()}</Text>
-              <Text className="text-xs text-ink-400 dark:text-ink-500" numberOfLines={1}>{item.file_uri}</Text>
+              <Text className="text-xs text-ink-400 dark:text-ink-400" numberOfLines={1}>{item.file_uri}</Text>
               <View className="flex-row gap-2 pt-1">
                 <Pressable onPress={() => handleRemove(item.episode_id)} accessibilityRole="button" accessibilityLabel={`Remove ${item.title}`} hitSlop={8} style={{ minHeight: 48, justifyContent: 'center' }} className="rounded-full border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-5 py-2.5"><Text className="text-xs font-semibold text-red-700 dark:text-red-300">Remove</Text></Pressable>
               </View>

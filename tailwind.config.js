@@ -38,9 +38,9 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ["Geist", "system-ui", "sans-serif"],
-        arabic: ["Noto Naskh Arabic", "serif"],
-        mono: ["GeistMono", "ui-monospace", "monospace"],
+        sans: ["Geist"],
+        arabic: ["Noto Naskh Arabic"],
+        mono: ["monospace"],
       },
       fontSize: {
         display: "24px",

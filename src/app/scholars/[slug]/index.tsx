@@ -3,43 +3,40 @@ import { useCallback, useState } from "react";
 import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { AudioCard, AudioCardSkeleton } from "@/components/audio-card";
+import { AudioCard } from "@/components/audio-card";
 import { EmptyState, ErrorState } from "@/components/empty-state";
-import { useScholarBySlug, useScholarEpisodes, useScholarSeries } from "@/hooks/useManhajQueries";
+import { useScholarPage } from "@/hooks/useManhajQueries";
 
 export default function ScholarDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
-  const scholarQ = useScholarBySlug(slug ?? "");
-  const seriesQ = useScholarSeries(scholarQ.data?.id ?? "");
-  const episodesQ = useScholarEpisodes(scholarQ.data?.id ?? "");
+  const pageQ = useScholarPage(slug ?? "");
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([scholarQ.refetch(), seriesQ.refetch(), episodesQ.refetch()]);
+    await pageQ.refetch();
     setRefreshing(false);
-  }, [scholarQ, seriesQ, episodesQ]);
+  }, [pageQ]);
 
-  if (scholarQ.isPending) {
+  if (pageQ.isPending) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink">
+      <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink-950">
         <View className="h-32 bg-sand-100 dark:bg-ink-800" />
       </SafeAreaView>
     );
   }
-  if (scholarQ.isError || !scholarQ.data) {
+  if (pageQ.isError || !pageQ.data) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink">
-        <ErrorState message={scholarQ.isError ? "Failed to load scholar" : "Scholar not found"} onRetry={() => scholarQ.refetch()} />
+      <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink-950">
+        <ErrorState message={pageQ.isError ? "Failed to load scholar" : "Scholar not found"} onRetry={() => pageQ.refetch()} />
       </SafeAreaView>
     );
   }
 
-  const scholar = scholarQ.data;
-  const episodes = episodesQ.data?.slice(0, 10) ?? [];
+  const { scholar, series, episodes } = pageQ.data;
 
   return (
-    <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink">
+    <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink-950">
       <FlatList
         data={episodes}
         keyExtractor={(e) => e.id}
@@ -52,23 +49,19 @@ export default function ScholarDetailScreen() {
                 <Text className="text-xl font-bold text-white">{scholar.name[0]}</Text>
               </View>
               <Text className="text-xl font-bold text-ink dark:text-white">{scholar.name}</Text>
-              {scholar.bio ? <Text className="text-sm leading-5 text-ink-600 dark:text-ink-300">{scholar.bio}</Text> : null}
-              <Text className="text-xs text-ink-400 dark:text-ink-500">
+              {scholar.bio ? <Text className="text-sm leading-5 text-ink-600 dark:text-ink-100">{scholar.bio}</Text> : null}
+              <Text className="text-xs text-ink-400 dark:text-ink-400">
                 {scholar.series_count ?? 0} series · {scholar.episode_count ?? 0} lectures
               </Text>
             </View>
 
             <View className="gap-3 px-6">
-              <Text className="text-sm font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-500">Series</Text>
-              {seriesQ.isPending ? (
-                <View className="h-20 rounded-2xl bg-sand-100 dark:bg-ink-800" />
-              ) : seriesQ.isError ? (
-                <ErrorState message="Failed to load series" onRetry={() => seriesQ.refetch()} />
-              ) : !seriesQ.data?.length ? (
+              <Text className="text-sm font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-400">Series</Text>
+              {!series.length ? (
                 <EmptyState title="No series" description="Series will appear here." />
               ) : (
                 <View className="gap-3">
-                  {seriesQ.data.map((s) => (
+                  {series.map((s) => (
                     <Link key={s.id} href={`/scholars/${scholar.slug}/series/${s.slug}` as never} asChild>
                       <Pressable accessibilityRole="button" hitSlop={8} className="rounded-2xl border border-sand-200 dark:border-ink-700 bg-white dark:bg-ink-800 p-4 active:opacity-80" style={{ minHeight: 48 }}>
                         <Text className="text-sm font-semibold text-ink dark:text-white">{s.title}</Text>
@@ -77,7 +70,7 @@ export default function ScholarDetailScreen() {
                             {s.description}
                           </Text>
                         ) : null}
-                        <Text className="mt-2 text-xs font-medium text-ink-400 dark:text-ink-500">{s.episode_count ?? 0} lectures</Text>
+                        <Text className="mt-2 text-xs font-medium text-ink-400 dark:text-ink-400">{s.episode_count ?? 0} lectures</Text>
                       </Pressable>
                     </Link>
                   ))}
@@ -86,21 +79,14 @@ export default function ScholarDetailScreen() {
             </View>
 
             <View className="px-6">
-              <Text className="text-sm font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-500">Latest lectures</Text>
+              <Text className="text-sm font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-400">Latest lectures</Text>
             </View>
           </View>
         }
         ListEmptyComponent={
-          episodesQ.isPending ? (
-            <View className="gap-3 px-6">
-              <AudioCardSkeleton />
-              <AudioCardSkeleton />
-            </View>
-          ) : episodesQ.isError ? (
-            <View className="px-6"><ErrorState message="Failed to load lectures" onRetry={() => episodesQ.refetch()} /></View>
-          ) : (
+          episodes.length === 0 ? (
             <View className="px-6"><EmptyState title="No lectures" /></View>
-          )
+          ) : null
         }
         renderItem={({ item, index }) => (
           <View className="px-6"><AudioCard episode={item} number={index + 1} /></View>

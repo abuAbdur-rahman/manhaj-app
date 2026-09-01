@@ -8,14 +8,6 @@ export function getDb(): SQLite.SQLiteDatabase {
   if (db) return db;
   db = SQLite.openDatabaseSync(DB_NAME);
   try { db.execSync(`PRAGMA journal_mode=WAL;`); } catch {}
-  // lightweight migrations: check user_version
-  try {
-    const v = db.getFirstSync<{ user_version: number }>(`PRAGMA user_version`)?.user_version ?? 0;
-    if (v < 1) {
-      db.execSync(`ALTER TABLE downloads ADD COLUMN resume_data TEXT;`);
-      db.execSync(`PRAGMA user_version=1`);
-    }
-  } catch {}
   db.execSync(`
     CREATE TABLE IF NOT EXISTS downloads (
       episode_id TEXT PRIMARY KEY NOT NULL,
@@ -23,7 +15,8 @@ export function getDb(): SQLite.SQLiteDatabase {
       scholar_name TEXT NOT NULL DEFAULT '',
       file_uri TEXT NOT NULL,
       downloaded_at TEXT NOT NULL,
-      file_size_bytes INTEGER NOT NULL DEFAULT 0
+      file_size_bytes INTEGER NOT NULL DEFAULT 0,
+      resume_data TEXT
     );
     CREATE TABLE IF NOT EXISTS player_state (
       key TEXT PRIMARY KEY NOT NULL,
@@ -42,6 +35,15 @@ export function getDb(): SQLite.SQLiteDatabase {
     CREATE INDEX IF NOT EXISTS plays_episode_idx ON plays(episode_id);
     CREATE INDEX IF NOT EXISTS plays_played_idx ON plays(played_at DESC);
   `);
+  // lightweight migrations: check user_version. Tables are created above first,
+  // so the ALTER below only adds resume_data to installs that predate it.
+  try {
+    const v = db.getFirstSync<{ user_version: number }>(`PRAGMA user_version`)?.user_version ?? 0;
+    if (v < 1) {
+      try { db.execSync(`ALTER TABLE downloads ADD COLUMN resume_data TEXT;`); } catch {}
+      db.execSync(`PRAGMA user_version=1`);
+    }
+  } catch {}
   return db;
 }
 

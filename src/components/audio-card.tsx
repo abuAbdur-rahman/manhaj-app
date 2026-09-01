@@ -36,7 +36,7 @@ export function AudioCard({ episode, variant = "row", number, onPlay, href }: Pr
           <Text className="font-mono text-xs text-ink-500 dark:text-ink-400">{dur}</Text>
         </View>
         <Link href={(href ?? `/lectures/${episode.slug}`) as never} asChild>
-          <Pressable accessibilityRole="button" accessibilityLabel={`${title} by ${scholarName}`}>
+          <Pressable accessibilityRole="button" accessibilityLabel={`${title} by ${scholarName}`} hitSlop={8} style={{ minHeight: 48 }}>
             <Text className="mt-2 line-clamp-2 text-sm font-semibold text-ink dark:text-ink-100" numberOfLines={2}>
               {title}
             </Text>
@@ -49,16 +49,18 @@ export function AudioCard({ episode, variant = "row", number, onPlay, href }: Pr
           ))}
         </View>
         <View className="mt-3 flex-row gap-2">
-          <Pressable
-            onPress={() => onPlay?.(episode)}
-            accessibilityRole="button"
-            accessibilityLabel={`Play ${title}`}
-            hitSlop={8}
-            style={{ minHeight: 48, minWidth: 48 }}
-            className="flex-1 flex-row items-center justify-center gap-1 rounded-full bg-forest-700 py-2.5 active:opacity-90"
-          >
-            <Text className="text-xs font-semibold text-white">Play</Text>
-          </Pressable>
+          {onPlay ? (
+            <Pressable
+              onPress={() => onPlay(episode)}
+              accessibilityRole="button"
+              accessibilityLabel={`Play ${title}`}
+              hitSlop={8}
+              style={{ minHeight: 48, minWidth: 48 }}
+              className="flex-1 flex-row items-center justify-center gap-1 rounded-full bg-forest-700 py-2.5 active:opacity-90"
+            >
+              <Text className="text-xs font-semibold text-white">Play</Text>
+            </Pressable>
+          ) : null}
         </View>
       </View>
     );

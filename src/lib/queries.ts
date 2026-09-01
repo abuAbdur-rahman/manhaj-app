@@ -149,7 +149,8 @@ export async function getSeriesWithEpisodes(
     .select("*, scholar:scholar_id(*), series:series_id(*)")
     .eq("series_id", series.id)
     .eq("is_published", true)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(100);
   if (episodesError) throw episodesError;
   return { series, episodes: episodes as Episode[] };
 }
@@ -194,11 +195,20 @@ export async function getSeriesEpisodes(seriesId: string, limit = 10): Promise<E
   return data as Episode[];
 }
 
+export async function getScholarPage(slug: string): Promise<{ scholar: Scholar; series: Series[]; episodes: Episode[] } | null> {
+  const scholar = await getScholarBySlug(slug);
+  if (!scholar) return null;
+  const [series, episodes] = await Promise.all([getScholarSeries(scholar.id, 10), getScholarEpisodes(scholar.id, 10)]);
+  return { scholar, series, episodes };
+}
+
 export async function searchEpisodes(query: string, language?: string): Promise<Episode[]> {
   const apiUrl = process.env.EXPO_PUBLIC_API_URL ?? "https://manhaj-sunnah.vercel.app";
-  const params = new URLSearchParams({ q: query });
-  if (language) params.set("language", language);
-  const res = await fetch(`${apiUrl}/api/search?${params.toString()}`);
+  const safeQuery = query.trim().slice(0, 200);
+  const allowedLanguages = ["yoruba", "english", "arabic"];
+  const params = new URLSearchParams({ q: safeQuery });
+  if (language && allowedLanguages.includes(language)) params.set("language", language);
+  const res = await fetch(`${apiUrl}/api/search?${params.toString()}`, { signal: AbortSignal.timeout(15000) });
   if (!res.ok) throw new Error(`Search failed: ${res.status}`);
   const json = (await res.json()) as unknown;
   if (!json || typeof json !== "object") return [];

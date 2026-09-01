@@ -1,6 +1,6 @@
 import TrackPlayer, { PlayerCommand } from "@rntp/player";
 import type { Episode } from "@/types";
-import { getLocalUri } from "@/lib/downloads";
+import { getLocalUri, isAllowedAudioHost } from "@/lib/downloads";
 import { logAppError } from "@/lib/logError";
 import { requestNotificationPermissionOnce } from "@/lib/permissions";
 import { usePlayerStore } from "@/store/player";
@@ -18,10 +18,8 @@ export async function setupTrackPlayer(): Promise<void> {
       handleAudioBecomingNoisy: true,
       android: {
         taskRemovedBehavior: "stop",
-        audioMixing: { duck: true } as unknown as { duck: boolean },
-      } as unknown as Record<string, unknown>,
-      progressUpdateEventInterval: 1,
-    } as unknown as Parameters<typeof TrackPlayer.setupPlayer>[0]);
+      },
+    });
     TrackPlayer.setCommands({
       capabilities: [
         PlayerCommand.PlayPause,
@@ -38,6 +36,11 @@ export async function setupTrackPlayer(): Promise<void> {
   } finally {
     setupPromise = null;
   }
+}
+
+function isPlayableUrl(url: string): boolean {
+  if (url.startsWith("file://")) return true;
+  return isAllowedAudioHost(url);
 }
 
 export async function playEpisode(episode: Episode, queue?: Episode[]): Promise<void> {
@@ -57,18 +60,20 @@ export async function playEpisode(episode: Episode, queue?: Episode[]): Promise<
     const tracks = (queue ?? [episode]).map((ep) => {
       const u = getLocalUri(ep.id) ?? ep.audio_url;
       if (!u) throw new Error(`Episode ${ep.title} has no audio URL`);
+      if (!isPlayableUrl(u)) throw new Error(`Audio URL host not allowed: ${ep.title}`);
+      const artworkUrl = (ep.series as unknown as { cover_url?: string })?.cover_url ?? ep.scholar?.photo_url ?? undefined;
       return {
         mediaId: ep.id,
-        url: u as string,
+        url: u,
         title: ep.title,
         artist: ep.scholar?.name ?? "Manhaj Sunnah",
-        artworkUrl: (ep.series as unknown as { cover_url?: string })?.cover_url ?? ep.scholar?.photo_url ?? undefined,
+        artworkUrl: artworkUrl?.startsWith("https://") ? artworkUrl : undefined,
         duration: ep.duration_seconds ?? undefined,
       };
     });
-    try { (TrackPlayer as unknown as { clear?: () => void }).clear?.(); } catch {}
-    await (TrackPlayer as unknown as { setMediaItems: (t: unknown, i: number) => Promise<void> }).setMediaItems(tracks, startIndex);
-    await (TrackPlayer as unknown as { play: () => Promise<void> }).play();
+    TrackPlayer.clear();
+    TrackPlayer.setMediaItems(tracks, startIndex);
+    TrackPlayer.play();
     usePlayerStore.getState().setPlaying(true);
     usePlayerStore.getState().setLoading(false);
   } catch (e) {

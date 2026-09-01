@@ -1,17 +1,17 @@
 import "@/global.css";
 
-import { QueryClientProvider, focusManager, onlineManager } from "@tanstack/react-query";
+import { focusManager, onlineManager } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import NetInfo from "@react-native-community/netinfo";
 import * as SplashScreen from "expo-splash-screen";
+import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { AppState, View, useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
-import AppTabs from "@/components/app-tabs";
 import { ErrorBoundary } from "@/components/error-boundary";
-import { MiniPlayer } from "@/components/mini-player";
 import { useLoadFonts } from "@/hooks/useLoadFonts";
 import { createNativePersister } from "@/lib/query-persister";
 import { queryClient } from "@/lib/queryClient";
@@ -27,6 +27,10 @@ try {
 } catch {}
 
 SplashScreen.preventAutoHideAsync();
+
+// SQLite-backed offline cache restore (cached-first contract). Created once so
+// PersistQueryClientProvider gates child fetching until restore completes.
+const nativePersister = createNativePersister();
 
 export default function RootLayout() {
   const systemScheme = useColorScheme();
@@ -46,17 +50,10 @@ export default function RootLayout() {
     })();
     const sub = AppState.addEventListener("change", (s) => focusManager.setFocused(s === "active"));
     // wire onlineManager to NetInfo for offlineFirst reconnect
-    const unsubNet = NetInfo.addEventListener((s) => onlineManager.setOnline(s.isConnected ?? s.isInternetReachable ?? false));
-    // @ts-ignore persistQueryClient hydra — rehydrate if present, else no-op
-    try {
-      // @ts-ignore experimental persister
-      const { persistQueryClient } = require("@tanstack/query-persist-client-core");
-      const persister = createNativePersister();
-      try { persistQueryClient({ queryClient, persister: persister as unknown as never, maxAge: 1000 * 60 * 60 * 12, buster: "v1" }); } catch {}
-    } catch {}
+    const unsubNet = NetInfo.addEventListener((s) => onlineManager.setOnline(s.isInternetReachable ?? s.isConnected ?? false));
     return () => { sub.remove(); try { (unsubNet as unknown as () => void)(); } catch {} };
   }, []);
-  // gate splash on fonts (Geist/Noto placeholder — system fallback until bundled)
+  // gate splash on fonts
   useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync().catch(() => {});
   }, [fontsLoaded]);
@@ -66,13 +63,13 @@ export default function RootLayout() {
       <View className={resolved === "dark" ? "dark flex-1" : "flex-1"}>
         <StatusBar style={resolved === "dark" ? "light" : "dark"} />
         <ErrorBoundary>
-          <QueryClientProvider client={queryClient}>
+          <PersistQueryClientProvider
+            client={queryClient}
+            persistOptions={{ persister: nativePersister, maxAge: 1000 * 60 * 60 * 12, buster: "v1" }}
+          >
             <AnimatedSplashOverlay />
-            <View style={{ flex: 1 }}>
-              <AppTabs />
-              <MiniPlayer />
-            </View>
-          </QueryClientProvider>
+            <Stack screenOptions={{ headerShown: false }} />
+          </PersistQueryClientProvider>
         </ErrorBoundary>
       </View>
     </GestureHandlerRootView>
