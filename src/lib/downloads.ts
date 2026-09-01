@@ -1,4 +1,4 @@
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import NetInfo from "@react-native-community/netinfo";
 import type { Episode } from "@/types";
 import { getDb, kvGet, kvSet } from "@/lib/db";
@@ -8,7 +8,7 @@ export const CAP_KEY = "storage_cap_bytes";
 export const WIFI_ONLY_KEY = "wifi_only_downloads";
 const AUDIO_DIR = "audio";
 
-function isAllowedAudioHost(url: string): boolean {
+export function isAllowedAudioHost(url: string): boolean {
   try {
     const u = new URL(url);
     if (u.protocol !== "https:") return false;
@@ -25,16 +25,15 @@ function isAllowedAudioHost(url: string): boolean {
         if (u.host === new URL(supa).host) return true;
       } catch {}
     }
-    // fallback: allow any https not private
-    if (u.hostname === "localhost" || u.hostname === "127.0.0.1") return false;
-    return true;
+    // no generic fallback — only explicit R2/Supabase hosts allowed
+    return false;
   } catch {
     return false;
   }
 }
 
 function audioDir(): string {
-  const base = (FileSystem as unknown as { documentDirectory?: string | null }).documentDirectory ?? null;
+  const base = FileSystem.documentDirectory ?? null;
   if (!base) throw new Error("No documentDirectory available");
   return `${base}${AUDIO_DIR}/`;
 }
@@ -107,10 +106,13 @@ export async function downloadEpisode(ep: Episode, onProgress?: (written: number
   // cap check — estimate from HEAD; post-download check is authoritative
   const used = getStorageUsedBytes();
   const cap = getStorageCapBytes();
-  // try HEAD to get size (may CORS fail -> expected 0, fall through to post-check)
+  // try HEAD to get size with 8s timeout (may CORS fail -> expected 0, fall through to post-check)
   let expected = 0;
   try {
-    const head = await fetch(ep.audio_url, { method: "HEAD" });
+    const ac = new AbortController();
+    const t = setTimeout(() => ac.abort(), 8000);
+    const head = await fetch(ep.audio_url, { method: "HEAD", signal: ac.signal as unknown as AbortSignal });
+    clearTimeout(t);
     const len = head.headers.get("content-length");
     if (len) expected = Number(len);
   } catch {}
@@ -124,33 +126,12 @@ export async function downloadEpisode(ep: Episode, onProgress?: (written: number
   const dir = await ensureAudioDir();
   const dest = `${dir}${ep.id}.mp3`;
 
-  // Legacy API: FileSystem.createDownloadResumable (SDK 57 still supports)
-  const FS = FileSystem as unknown as {
-    createDownloadResumable?: (
-      url: string,
-      fileUri: string,
-      opts: Record<string, unknown>,
-      cb?: (p: { totalBytesWritten: number; totalBytesExpectedToWrite: number }) => void,
-    ) => { downloadAsync: () => Promise<{ uri: string } | null> };
-  };
-
-  let resUri: string | null = null;
-  let sizeBytes = expected;
-
-  if (FS.createDownloadResumable) {
-    const dl = FS.createDownloadResumable(ep.audio_url as string, dest, {}, (p) => onProgress?.(p.totalBytesWritten, p.totalBytesExpectedToWrite));
-    const res = await dl.downloadAsync();
-    resUri = res?.uri ?? null;
-    if (resUri) {
-      const info = await FileSystem.getInfoAsync(resUri);
-      if (info.exists && "size" in info) sizeBytes = (info as { size: number }).size ?? expected;
-    }
-  } else {
-    throw new Error("Resumable download not available on this FileSystem build — update expo-file-system");
-  }
-
+  const dl = FileSystem.createDownloadResumable(ep.audio_url, dest, {}, (p) => onProgress?.(p.totalBytesWritten, p.totalBytesExpectedToWrite));
+  const res = await dl.downloadAsync();
+  const resUri = res?.uri ?? null;
   if (!resUri) throw new Error("Download failed — no file returned");
 
+  let sizeBytes = expected;
   const dlInfo = await FileSystem.getInfoAsync(resUri);
   if (dlInfo.exists && "size" in dlInfo) {
     const sz = (dlInfo as { size?: number }).size;

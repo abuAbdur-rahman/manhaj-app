@@ -1,12 +1,25 @@
 import TrackPlayer, { Event } from "@rntp/player";
 
+import { logAppError } from "@/lib/logError";
+import { usePlayerStore } from "@/store/player";
+
 export function registerBackgroundPlayback() {
   TrackPlayer.registerPlaybackSession(() => {
-    TrackPlayer.addEventListener(Event.RemotePlay, () => TrackPlayer.play());
-    TrackPlayer.addEventListener(Event.RemotePause, () => TrackPlayer.pause());
-    TrackPlayer.addEventListener(Event.RemoteNext, () => TrackPlayer.skipToNext());
-    TrackPlayer.addEventListener(Event.RemotePrevious, () => TrackPlayer.skipToPrevious());
-    TrackPlayer.addEventListener(Event.RemoteSeek, (e: { position: number }) => TrackPlayer.seekTo(e.position));
-    // v5 handles audio ducking natively via audioMixing config; keep no-op for compat
+    // Keep the Zustand store in sync with native auto-advance and
+    // notification/headset transport controls (native handling).
+    TrackPlayer.addEventListener(Event.MediaItemTransition, (e) => {
+      try {
+        const { setActiveIndex } = usePlayerStore.getState();
+        if (typeof e.index === "number" && e.index >= 0) setActiveIndex(e.index);
+      } catch {}
+    });
+    TrackPlayer.addEventListener(Event.IsPlayingChanged, (e) => {
+      try {
+        usePlayerStore.getState().setPlaying(e.playing);
+      } catch {}
+    });
+    TrackPlayer.addEventListener(Event.PlaybackError, (e) => {
+      logAppError({ message: e.message, stack: undefined, route: "PlaybackService.PlaybackError" });
+    });
   });
 }

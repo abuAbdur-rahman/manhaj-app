@@ -1,6 +1,6 @@
 import TrackPlayer, { PlayerCommand } from "@rntp/player";
 import type { Episode } from "@/types";
-import { getLocalUri } from "@/lib/downloads";
+import { getLocalUri, isAllowedAudioHost } from "@/lib/downloads";
 import { logAppError } from "@/lib/logError";
 import { requestNotificationPermissionOnce } from "@/lib/permissions";
 import { usePlayerStore } from "@/store/player";
@@ -26,6 +26,7 @@ export async function setupTrackPlayer(): Promise<void> {
         PlayerCommand.Next,
         PlayerCommand.Previous,
         PlayerCommand.Seek,
+        PlayerCommand.Stop,
       ],
     });
     setupDone = true;
@@ -37,32 +38,43 @@ export async function setupTrackPlayer(): Promise<void> {
   }
 }
 
+function isPlayableUrl(url: string): boolean {
+  if (url.startsWith("file://")) return true;
+  return isAllowedAudioHost(url);
+}
+
 export async function playEpisode(episode: Episode, queue?: Episode[]): Promise<void> {
   try {
     await requestNotificationPermissionOnce();
     const { setEpisode, setQueue } = usePlayerStore.getState();
+    const items = queue && queue.length > 0 ? queue : [episode];
     const startIndex = queue && queue.length > 0 ? Math.max(0, queue.findIndex((e) => e.id === episode.id)) : 0;
-    if (queue && queue.length > 0) setQueue(queue, startIndex);
-    else setEpisode(episode);
 
     const localUri = getLocalUri(episode.id);
     const url = localUri ?? episode.audio_url;
     if (!url) throw new Error("No audio URL");
 
     await setupTrackPlayer();
-    TrackPlayer.clear();
-    const tracks = (queue ?? [episode]).map((ep) => {
+    // Build + validate ALL tracks BEFORE touching the store or native player,
+    // so an invalid queue item never leaves the store pointing at a rejected queue.
+    const tracks = items.map((ep) => {
       const u = getLocalUri(ep.id) ?? ep.audio_url;
       if (!u) throw new Error(`Episode ${ep.title} has no audio URL`);
+      if (!isPlayableUrl(u)) throw new Error(`Audio URL host not allowed: ${ep.title}`);
+      const artworkUrl = (ep.series as unknown as { cover_url?: string })?.cover_url ?? ep.scholar?.photo_url ?? undefined;
       return {
         mediaId: ep.id,
-        url: u as string,
+        url: u,
         title: ep.title,
         artist: ep.scholar?.name ?? "Manhaj Sunnah",
-        artworkUrl: (ep.series as unknown as { cover_url?: string })?.cover_url ?? ep.scholar?.photo_url ?? undefined,
+        artworkUrl: artworkUrl?.startsWith("https://") ? artworkUrl : undefined,
         duration: ep.duration_seconds ?? undefined,
       };
     });
+    if (queue && queue.length > 0) setQueue(queue, startIndex);
+    else setEpisode(episode);
+
+    TrackPlayer.clear();
     TrackPlayer.setMediaItems(tracks, startIndex);
     TrackPlayer.play();
     usePlayerStore.getState().setPlaying(true);

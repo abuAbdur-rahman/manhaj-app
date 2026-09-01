@@ -1,19 +1,23 @@
 import "@/global.css";
 
-import { QueryClientProvider, focusManager } from "@tanstack/react-query";
+import { focusManager, onlineManager } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import NetInfo from "@react-native-community/netinfo";
 import * as SplashScreen from "expo-splash-screen";
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { AppState, View } from "react-native";
+import { AppState, View, useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
-import AppTabs from "@/components/app-tabs";
 import { ErrorBoundary } from "@/components/error-boundary";
-import { MiniPlayer } from "@/components/mini-player";
+import { useLoadFonts } from "@/hooks/useLoadFonts";
 import { createNativePersister } from "@/lib/query-persister";
 import { queryClient } from "@/lib/queryClient";
 import { registerBackgroundPlayback } from "@/service/PlaybackService";
 import { usePlayerStore } from "@/store/player";
+import { useThemeStore } from "@/store/theme";
 
 // Register playback session before UI mounts — required for headless/ background
 // and Android Auto/CarPlay where JS runtime may not be running for Remote* events.
@@ -24,19 +28,17 @@ try {
 
 SplashScreen.preventAutoHideAsync();
 
+// SQLite-backed offline cache restore (cached-first contract). Created once so
+// PersistQueryClientProvider gates child fetching until restore completes.
+const nativePersister = createNativePersister();
+
 export default function RootLayout() {
+  const systemScheme = useColorScheme();
+  const preference = useThemeStore((s) => s.preference);
+  const resolved = preference === "system" ? (systemScheme === "dark" ? "dark" : "light") : preference;
+  const { loaded: fontsLoaded } = useLoadFonts();
   useEffect(() => {
-    // restore persisted queries then hide splash
-    (async () => {
-      try {
-        const persister = createNativePersister();
-        const saved = await persister.restoreClient();
-        if (saved && typeof saved === "object" && "clientState" in (saved as Record<string, unknown>)) {
-          // persistQueryClient would hydrate here; we keep manual restore memo for now
-        }
-      } catch {}
-      await SplashScreen.hideAsync();
-    })();
+    try { useThemeStore.getState().hydrate(); } catch {}
     try {
       usePlayerStore.getState().hydrate();
     } catch {}
@@ -47,20 +49,29 @@ export default function RootLayout() {
       } catch {}
     })();
     const sub = AppState.addEventListener("change", (s) => focusManager.setFocused(s === "active"));
-    return () => sub.remove();
+    // wire onlineManager to NetInfo for offlineFirst reconnect
+    const unsubNet = NetInfo.addEventListener((s) => onlineManager.setOnline(s.isInternetReachable ?? s.isConnected ?? false));
+    return () => { sub.remove(); try { (unsubNet as unknown as () => void)(); } catch {} };
   }, []);
+  // gate splash on fonts
+  useEffect(() => {
+    if (fontsLoaded) SplashScreen.hideAsync().catch(() => {});
+  }, [fontsLoaded]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ErrorBoundary>
-        <QueryClientProvider client={queryClient}>
-          <AnimatedSplashOverlay />
-          <View style={{ flex: 1 }}>
-            <AppTabs />
-            <MiniPlayer />
-          </View>
-        </QueryClientProvider>
-      </ErrorBoundary>
+      <View className={resolved === "dark" ? "dark flex-1" : "flex-1"}>
+        <StatusBar style={resolved === "dark" ? "light" : "dark"} />
+        <ErrorBoundary>
+          <PersistQueryClientProvider
+            client={queryClient}
+            persistOptions={{ persister: nativePersister, maxAge: 1000 * 60 * 60 * 12, buster: "v1" }}
+          >
+            <AnimatedSplashOverlay />
+            <Stack screenOptions={{ headerShown: false }} />
+          </PersistQueryClientProvider>
+        </ErrorBoundary>
+      </View>
     </GestureHandlerRootView>
   );
 }

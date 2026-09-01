@@ -2,13 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Manhaj design tokens — ported from ../manhaj/app/globals.css */
+/* Manhaj design tokens — single source, ported from ../manhaj/app/globals.css
+   Keep tailwind.config.js + constants/theme.ts in sync when editing.
+   Material roles: surface = sand-50 / ink-950, surfaceVariant = sand-100 / ink-800 */
 :root {
   --forest-50: #f0f7f4;
+  --forest-100: #dcede6;
   --forest-500: #1a6b3c;
+  --forest-600: #155732;
   --forest-700: #0f4126;
+  --forest-900: #07200f;
   --sand-50: #fafaf7;
   --sand-100: #f5f3ec;
+  --sand-200: #eae6d9;
+  --sand-300: #d9d3c0;
+  --clay-400: #c2754a;
   --clay-500: #a85c35;
+  --clay-600: #8c4a29;
+  --ink-50: #f6f7f6;
+  --ink-100: #eef1ee;
+  --ink-400: #8da294;
+  --ink-500: #5c6b60;
+  --ink-600: #3d4a40;
+  --ink-700: #2a332c;
+  --ink-800: #1c231e;
   --ink-900: #141a16;
+  --ink-950: #0e1210;
+  /* semantic surface */
+  --surface: var(--sand-50);
+  --surface-variant: var(--sand-100);
+  --on-surface: var(--ink-900);
+}
+.dark {
+  --forest-50: #0f4126;
+  --forest-100: #0f4126;
+  --forest-500: #2a7a45;
+  --sand-50: #0e1210;
+  --sand-100: #1c231e;
+  --sand-200: #2a332c;
+  --sand-300: #3d4a40;
+  --clay-400: #d68a5e;
+  --ink-50: #1c231e;
+  --ink-100: #2a332c;
+  --surface: #0e1210;
+  --surface-variant: #1c231e;
+  --on-surface: #eef1ee;
 }

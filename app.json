@@ -3,14 +3,11 @@
     "name": "Manhaj Sunnah",
     "slug": "manhaj-app",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "manhaj",
     "userInterfaceStyle": "automatic",
-    "platforms": [
-      "android",
-      "web"
-    ],
+    "platforms": ["android"],
     "android": {
       "package": "com.manhaj.app",
       "adaptiveIcon": {
@@ -22,10 +19,11 @@
       "permissions": [
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
-        "android.permission.POST_NOTIFICATIONS",
-        "android.permission.FOREGROUND_SERVICE_DATA_SYNC"
+        "android.permission.POST_NOTIFICATIONS"
       ],
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": true,
+      "edgeToEdgeEnabled": true,
+      "allowBackup": false
     },
     "web": {
       "output": "static",
@@ -44,6 +42,31 @@
       "expo-secure-store",
       "expo-sqlite",
       [
+        "expo-font",
+        {
+          "android": {
+            "fonts": [
+              {
+                "fontFamily": "Geist",
+                "fontDefinitions": [
+                  { "path": "./node_modules/@expo-google-fonts/geist/400Regular/Geist_400Regular.ttf", "weight": 400 },
+                  { "path": "./node_modules/@expo-google-fonts/geist/500Medium/Geist_500Medium.ttf", "weight": 500 },
+                  { "path": "./node_modules/@expo-google-fonts/geist/600SemiBold/Geist_600SemiBold.ttf", "weight": 600 },
+                  { "path": "./node_modules/@expo-google-fonts/geist/700Bold/Geist_700Bold.ttf", "weight": 700 }
+                ]
+              },
+              {
+                "fontFamily": "Noto Naskh Arabic",
+                "fontDefinitions": [
+                  { "path": "./node_modules/@expo-google-fonts/noto-naskh-arabic/400Regular/NotoNaskhArabic_400Regular.ttf", "weight": 400 },
+                  { "path": "./node_modules/@expo-google-fonts/noto-naskh-arabic/700Bold/NotoNaskhArabic_700Bold.ttf", "weight": 700 }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      [
         "expo-build-properties",
         {
           "android": {
@@ -54,11 +77,11 @@
       ]
     ],
     "updates": {
-      "fallbackToCacheTimeout": 0,
+      "fallbackToCacheTimeout": 3000,
       "url": "https://u.expo.dev/fb209eff-f857-49be-8db2-9c2943aa48af"
     },
     "runtimeVersion": {
-      "policy": "appVersion"
+      "policy": "fingerprint"
     },
     "experiments": {
       "typedRoutes": true

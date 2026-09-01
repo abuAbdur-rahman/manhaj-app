@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./src/**/*.{js,jsx,ts,tsx}", "./app/**/*.{js,jsx,ts,tsx}"],
+  darkMode: "class",
+  content: ["./src/**/*.{js,jsx,ts,tsx}"],
   presets: [require("nativewind/preset")],
   theme: {
     extend: {
@@ -25,8 +26,11 @@ module.exports = {
           600: "#8c4a29",
         },
         ink: {
+          50: "#f6f7f6",
           100: "#eef1ee",
+          400: "#8da294",
           500: "#5c6b60",
+          600: "#3d4a40",
           700: "#2a332c",
           800: "#1c231e",
           900: "#141a16",
@@ -34,9 +38,9 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ["Geist", "system-ui", "sans-serif"],
-        arabic: ["Noto Naskh Arabic", "serif"],
-        mono: ["GeistMono", "ui-monospace", "monospace"],
+        sans: ["Geist"],
+        arabic: ["Noto Naskh Arabic"],
+        mono: ["monospace"],
       },
       fontSize: {
         display: "24px",

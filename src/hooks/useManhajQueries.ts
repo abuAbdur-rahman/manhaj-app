@@ -7,6 +7,7 @@ import {
   getRecentEpisodes,
   getScholarBySlug,
   getScholarEpisodes,
+  getScholarPage,
   getScholarSeries,
   getScholars,
   getSeriesWithEpisodes,
@@ -49,6 +50,14 @@ export function useScholarBySlug(slug: string) {
   });
 }
 
+export function useScholarPage(slug: string) {
+  return useQuery({
+    queryKey: ["scholar-page", slug],
+    queryFn: () => getScholarPage(slug),
+    enabled: !!slug,
+  });
+}
+
 export function useScholarSeries(scholarId: string) {
   return useQuery({
     queryKey: ["scholar-series", scholarId],
@@ -82,10 +91,13 @@ export function useEpisodeBySlug(slug: string) {
 }
 
 export function useSearchEpisodes(query: string, language?: string) {
+  const normalized = query.trim().slice(0, 200);
   return useQuery({
-    queryKey: ["search", query, language],
-    queryFn: () => searchEpisodes(query, language),
-    enabled: query.trim().length >= 2,
+    queryKey: ["search", normalized, language],
+    queryFn: () => searchEpisodes(normalized, language),
+    enabled: normalized.length >= 2,
+    placeholderData: (prev) => prev,
     staleTime: 30_000,
+    gcTime: 60_000,
   });
 }

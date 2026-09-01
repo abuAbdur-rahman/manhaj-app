@@ -1,11 +1,6 @@
-import { kvDelete, kvGet, kvSet } from "./db";
+import type { PersistedClient, Persister } from "@tanstack/query-persist-client-core";
 
-type PersistedClientStub = unknown;
-type PersisterStub = {
-  persistClient(p: PersistedClientStub): Promise<void>;
-  restoreClient(): Promise<PersistedClientStub | undefined>;
-  removeClient(): Promise<void>;
-};
+import { kvDelete, kvGet, kvSet } from "./db";
 
 const KEY = "rq-cache-v1";
 
@@ -14,10 +9,10 @@ const KEY = "rq-cache-v1";
  * Uses kv table (manhaj.db) via sync helpers but wraps as async Persister
  * to satisfy @tanstack/query-persist-client. Falls back to in-memory if SQLite unavailable.
  */
-export function createNativePersister(): PersisterStub {
-  let mem: PersistedClientStub | undefined;
+export function createNativePersister(): Persister {
+  let mem: PersistedClient | undefined;
   return {
-    async persistClient(p: PersistedClientStub) {
+    async persistClient(p: PersistedClient) {
       mem = p;
       try {
         kvSet(KEY, JSON.stringify(p));
@@ -28,7 +23,7 @@ export function createNativePersister(): PersisterStub {
     async restoreClient() {
       try {
         const raw = kvGet(KEY);
-        if (raw) return JSON.parse(raw) as PersistedClientStub;
+        if (raw) return JSON.parse(raw) as PersistedClient;
       } catch {}
       return mem;
     },
