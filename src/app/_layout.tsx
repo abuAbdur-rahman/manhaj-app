@@ -1,10 +1,9 @@
 import "@/global.css";
 
-import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { QueryClientProvider, focusManager } from "@tanstack/react-query";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
-import { AppState, View, useColorScheme } from "react-native";
+import { AppState, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
@@ -17,8 +16,6 @@ import { queryClient } from "@/lib/queryClient";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
   useEffect(() => {
     // restore persisted queries then hide splash
     (async () => {
@@ -36,8 +33,8 @@ export default function RootLayout() {
     } catch {}
     (async () => {
       try {
-        const TP = await import("react-native-track-player");
-        await TP.default.registerPlaybackService(() => require("@/service/PlaybackService").PlaybackService);
+        const { registerBackgroundPlayback } = await import("@/service/PlaybackService");
+        registerBackgroundPlayback();
       } catch {}
       try {
         const { setupTrackPlayer } = await import("@/lib/trackPlayer");
@@ -52,13 +49,11 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-            <AnimatedSplashOverlay />
-            <View style={{ flex: 1 }}>
-              <AppTabs />
-              <MiniPlayer />
-            </View>
-          </ThemeProvider>
+          <AnimatedSplashOverlay />
+          <View style={{ flex: 1 }}>
+            <AppTabs />
+            <MiniPlayer />
+          </View>
         </QueryClientProvider>
       </ErrorBoundary>
     </GestureHandlerRootView>

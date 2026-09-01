@@ -157,7 +157,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     if (current === null) return;
     if (current <= 1) {
       set({ sleepTimerRemaining: null, isPlaying: false });
-      import("react-native-track-player").then((m) => m.default.pause().catch(() => {})).catch(() => {});
+        import("@rntp/player").then((m) => m.default.pause()).catch(() => {});
     } else set({ sleepTimerRemaining: current - 1 });
   },
   clear: () =>

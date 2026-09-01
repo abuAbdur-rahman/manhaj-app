@@ -13,7 +13,6 @@
     ],
     "android": {
       "package": "com.manhaj.app",
-      "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
         "backgroundColor": "#1a6b3c",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -61,6 +60,7 @@
     "runtimeVersion": {
       "policy": "appVersion"
     },
+    "newArchEnabled": true,
     "experiments": {
       "typedRoutes": true
     },
