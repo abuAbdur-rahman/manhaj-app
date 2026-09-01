@@ -60,7 +60,6 @@
     "runtimeVersion": {
       "policy": "appVersion"
     },
-    "newArchEnabled": true,
     "experiments": {
       "typedRoutes": true
     },
