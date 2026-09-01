@@ -25,9 +25,8 @@ function isAllowedAudioHost(url: string): boolean {
         if (u.host === new URL(supa).host) return true;
       } catch {}
     }
-    // fallback: allow any https not private
-    if (u.hostname === "localhost" || u.hostname === "127.0.0.1") return false;
-    return true;
+    // no generic fallback — only explicit R2/Supabase hosts allowed
+    return false;
   } catch {
     return false;
   }
@@ -107,10 +106,13 @@ export async function downloadEpisode(ep: Episode, onProgress?: (written: number
   // cap check — estimate from HEAD; post-download check is authoritative
   const used = getStorageUsedBytes();
   const cap = getStorageCapBytes();
-  // try HEAD to get size (may CORS fail -> expected 0, fall through to post-check)
+  // try HEAD to get size with 8s timeout (may CORS fail -> expected 0, fall through to post-check)
   let expected = 0;
   try {
-    const head = await fetch(ep.audio_url, { method: "HEAD" });
+    const ac = new AbortController();
+    const t = setTimeout(() => ac.abort(), 8000);
+    const head = await fetch(ep.audio_url, { method: "HEAD", signal: ac.signal as unknown as AbortSignal });
+    clearTimeout(t);
     const len = head.headers.get("content-length");
     if (len) expected = Number(len);
   } catch {}
@@ -137,6 +139,22 @@ export async function downloadEpisode(ep: Episode, onProgress?: (written: number
   let resUri: string | null = null;
   let sizeBytes = expected;
 
+  // SDK 57: primary is expo-file-system/legacy createDownloadResumable; new FileSystem.File API is next migration.
+  // Try legacy import guard, fallback to FileSystem.createDownloadResumable via cast if present.
+  const tryLegacy = async (): Promise<{ uri: string | null }> => {
+    try {
+      // @ts-ignore legacy entry may not be installed until migrate
+      const Legacy = await import("expo-file-system/legacy").catch(() => null as unknown as null);
+      const LFS = Legacy as unknown as typeof FS | null;
+      if (LFS?.createDownloadResumable) {
+        const dl = LFS.createDownloadResumable(ep.audio_url as string, dest, {}, (p) => onProgress?.(p.totalBytesWritten, p.totalBytesExpectedToWrite));
+        const res = await dl.downloadAsync();
+        return { uri: res?.uri ?? null };
+      }
+    } catch {}
+    return { uri: null };
+  };
+
   if (FS.createDownloadResumable) {
     const dl = FS.createDownloadResumable(ep.audio_url as string, dest, {}, (p) => onProgress?.(p.totalBytesWritten, p.totalBytesExpectedToWrite));
     const res = await dl.downloadAsync();
@@ -146,7 +164,14 @@ export async function downloadEpisode(ep: Episode, onProgress?: (written: number
       if (info.exists && "size" in info) sizeBytes = (info as { size: number }).size ?? expected;
     }
   } else {
-    throw new Error("Resumable download not available on this FileSystem build — update expo-file-system");
+    const leg = await tryLegacy();
+    if (leg.uri) {
+      resUri = leg.uri;
+      const info = await FileSystem.getInfoAsync(resUri);
+      if (info.exists && "size" in info) sizeBytes = (info as { size: number }).size ?? expected;
+    } else {
+      throw new Error("Resumable download not available on this FileSystem build — update expo-file-system");
+    }
   }
 
   if (!resUri) throw new Error("Download failed — no file returned");

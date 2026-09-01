@@ -36,8 +36,6 @@ export interface Scholar {
   episode_count?: number;
 }
 
-export type AdminRole = "super_admin" | "scholar_admin";
-
 export interface Series {
   id: string;
   scholar_id: string;
@@ -51,17 +49,6 @@ export interface Series {
   updated_at: string;
   scholar?: Scholar;
   episode_count?: number;
-}
-
-export interface Admin {
-  id: string;
-  name: string;
-  email: string;
-  role: AdminRole;
-  scholar_id: string | null;
-  is_active: boolean;
-  invited_by: string | null;
-  created_at: string;
 }
 
 export interface Episode {
@@ -96,7 +83,6 @@ export interface PlayerState {
 
 export interface DownloadedEpisode {
   episode: Episode;
-  audioBlob?: Blob;
   downloadedAt: string;
   fileSizeBytes: number;
 }

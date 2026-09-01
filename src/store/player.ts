@@ -180,13 +180,13 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   setLoading: (loading) => set({ isLoading: loading }),
   setSleepTimer: (seconds) => set({ sleepTimerRemaining: seconds }),
   tickSleepTimer: () => {
-    const current = get().sleepTimerRemaining;
-    if (current === null) return;
-    if (current <= 1) {
-      set({ sleepTimerRemaining: null, isPlaying: false });
-        import("@rntp/player").then((m) => m.default.pause()).catch(() => {});
-    } else set({ sleepTimerRemaining: current - 1 });
-  },
+     const current = get().sleepTimerRemaining;
+     if (current === null) return;
+     if (current <= 1) {
+       set({ sleepTimerRemaining: null, isPlaying: false });
+         import("@rntp/player").then((m) => (m.default ?? m).pause()).catch(() => {});
+     } else set({ sleepTimerRemaining: current - 1 });
+   },
   clear: () =>
     set(() => {
       try {

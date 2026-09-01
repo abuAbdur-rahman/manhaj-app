@@ -3,14 +3,11 @@
     "name": "Manhaj Sunnah",
     "slug": "manhaj-app",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "manhaj",
     "userInterfaceStyle": "automatic",
-    "platforms": [
-      "android",
-      "web"
-    ],
+    "platforms": ["android"],
     "android": {
       "package": "com.manhaj.app",
       "adaptiveIcon": {
@@ -22,10 +19,10 @@
       "permissions": [
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
-        "android.permission.POST_NOTIFICATIONS",
-        "android.permission.FOREGROUND_SERVICE_DATA_SYNC"
+        "android.permission.POST_NOTIFICATIONS"
       ],
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": true,
+      "edgeToEdgeEnabled": true
     },
     "web": {
       "output": "static",
@@ -51,14 +48,15 @@
             "enableMinifyInReleaseBuilds": true
           }
         }
-      ]
+      ],
+      "@rntp/player"
     ],
     "updates": {
-      "fallbackToCacheTimeout": 0,
+      "fallbackToCacheTimeout": 3000,
       "url": "https://u.expo.dev/fb209eff-f857-49be-8db2-9c2943aa48af"
     },
     "runtimeVersion": {
-      "policy": "appVersion"
+      "policy": "fingerprint"
     },
     "experiments": {
       "typedRoutes": true

@@ -7,6 +7,15 @@ let db: SQLite.SQLiteDatabase | null = null;
 export function getDb(): SQLite.SQLiteDatabase {
   if (db) return db;
   db = SQLite.openDatabaseSync(DB_NAME);
+  try { db.execSync(`PRAGMA journal_mode=WAL;`); } catch {}
+  // lightweight migrations: check user_version
+  try {
+    const v = db.getFirstSync<{ user_version: number }>(`PRAGMA user_version`)?.user_version ?? 0;
+    if (v < 1) {
+      db.execSync(`ALTER TABLE downloads ADD COLUMN resume_data TEXT;`);
+      db.execSync(`PRAGMA user_version=1`);
+    }
+  } catch {}
   db.execSync(`
     CREATE TABLE IF NOT EXISTS downloads (
       episode_id TEXT PRIMARY KEY NOT NULL,

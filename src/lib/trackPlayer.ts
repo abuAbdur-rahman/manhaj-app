@@ -18,14 +18,17 @@ export async function setupTrackPlayer(): Promise<void> {
       handleAudioBecomingNoisy: true,
       android: {
         taskRemovedBehavior: "stop",
-      },
-    });
+        audioMixing: { duck: true } as unknown as { duck: boolean },
+      } as unknown as Record<string, unknown>,
+      progressUpdateEventInterval: 1,
+    } as unknown as Parameters<typeof TrackPlayer.setupPlayer>[0]);
     TrackPlayer.setCommands({
       capabilities: [
         PlayerCommand.PlayPause,
         PlayerCommand.Next,
         PlayerCommand.Previous,
         PlayerCommand.Seek,
+        PlayerCommand.Stop,
       ],
     });
     setupDone = true;
@@ -50,7 +53,7 @@ export async function playEpisode(episode: Episode, queue?: Episode[]): Promise<
     if (!url) throw new Error("No audio URL");
 
     await setupTrackPlayer();
-    TrackPlayer.clear();
+    // gate notification already done; ensure queue committed before play
     const tracks = (queue ?? [episode]).map((ep) => {
       const u = getLocalUri(ep.id) ?? ep.audio_url;
       if (!u) throw new Error(`Episode ${ep.title} has no audio URL`);
@@ -63,8 +66,9 @@ export async function playEpisode(episode: Episode, queue?: Episode[]): Promise<
         duration: ep.duration_seconds ?? undefined,
       };
     });
-    TrackPlayer.setMediaItems(tracks, startIndex);
-    TrackPlayer.play();
+    try { (TrackPlayer as unknown as { clear?: () => void }).clear?.(); } catch {}
+    await (TrackPlayer as unknown as { setMediaItems: (t: unknown, i: number) => Promise<void> }).setMediaItems(tracks, startIndex);
+    await (TrackPlayer as unknown as { play: () => Promise<void> }).play();
     usePlayerStore.getState().setPlaying(true);
     usePlayerStore.getState().setLoading(false);
   } catch (e) {

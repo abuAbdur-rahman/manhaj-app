@@ -86,18 +86,18 @@ export default function LectureScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-sand-50">
+    <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink-950">
       <ScrollView contentContainerClassName="gap-6 p-6 pb-10">
         <View className="gap-2">
-          <Text className="text-[11px] font-semibold uppercase tracking-widest text-forest-600">
+          <Text className="text-xs font-semibold uppercase tracking-widest text-forest-600 dark:text-forest-100">
             {ep.scholar?.name ?? ""} {ep.series ? `· ${ep.series.title}` : ""}
           </Text>
-          <Text className="text-xl font-bold leading-7 text-ink">{ep.title}</Text>
-          <View className="flex-row gap-2">
-            <Text className="rounded bg-forest-50 px-2 py-1 text-xs font-semibold uppercase text-forest-700">{ep.language}</Text>
-            <Text className="font-mono text-xs font-medium text-ink-500">{formatDuration(ep.duration_seconds ?? 0)}</Text>
+          <Text className="text-xl font-bold leading-7 text-ink dark:text-ink-100">{ep.title}</Text>
+          <View className="flex-row flex-wrap gap-2">
+            <Text className="rounded bg-forest-50 px-2 py-1 text-xs font-semibold uppercase text-forest-700 dark:bg-forest-900 dark:text-forest-100">{ep.language}</Text>
+            <Text className="font-mono text-xs font-medium text-ink-500 dark:text-ink-400">{formatDuration(ep.duration_seconds ?? 0)}</Text>
             {ep.tags.map((t) => (
-              <Text key={t} className="rounded bg-sand-100 px-2 py-1 text-xs font-medium text-ink-600">
+              <Text key={t} className="rounded bg-sand-100 px-2 py-1 text-xs font-medium text-ink-600 dark:bg-ink-800 dark:text-ink-400">
                 {t}
               </Text>
             ))}
@@ -105,28 +105,28 @@ export default function LectureScreen() {
         </View>
 
         {ep.description ? (
-          <View className="rounded-2xl border border-sand-200 bg-white p-4">
-            <Text className="text-sm leading-5 text-ink-700">{ep.description}</Text>
+          <View className="rounded-2xl border border-sand-200 bg-white p-4 dark:border-ink-800 dark:bg-ink-900">
+            <Text className="text-sm leading-5 text-ink-700 dark:text-ink-100">{ep.description}</Text>
           </View>
         ) : null}
 
         <View className="gap-3">
-          <View className="rounded-2xl border border-sand-200 bg-white p-4 gap-3">
-            <Text className="text-sm font-semibold text-ink">Playback</Text>
-            <Text className="text-xs leading-4 text-ink-500">{isDownloaded ? "Downloaded — plays offline via local file" : "Streams directly from R2. Background + notification controls via track-player."}</Text>
+          <View className="rounded-2xl border border-sand-200 bg-white p-4 gap-3 dark:border-ink-800 dark:bg-ink-900">
+            <Text className="text-sm font-semibold text-ink dark:text-ink-100">Playback</Text>
+            <Text className="text-xs leading-4 text-ink-500 dark:text-ink-400">{isDownloaded ? "Downloaded — plays offline via local file" : "Streams directly from R2. Background + notification controls via track-player."}</Text>
             <View className="flex-row flex-wrap gap-2">
-              <Pressable onPress={handlePlay} className="rounded-full bg-forest-600 px-5 py-2.5">
+              <Pressable onPress={handlePlay} accessibilityRole="button" accessibilityLabel={isDownloaded ? "Play offline" : "Play"} hitSlop={8} style={{ minHeight: 48, justifyContent: 'center' }} className="rounded-full bg-forest-600 px-5 py-2.5 active:opacity-90 dark:bg-forest-500">
                 <Text className="text-sm font-bold text-white">{isDownloaded ? "Play offline" : "Play"}</Text>
               </Pressable>
               {!isDownloaded ? (
-                <Pressable disabled={dlBusy} onPress={handleDownload} className={`rounded-full border px-5 py-2.5 ${dlBusy ? "border-sand-200 bg-sand-100" : "border-sand-200 bg-sand-50"}`}>
-                  <Text className="text-sm font-semibold text-ink">{dlBusy ? (dlProgress !== null ? `${dlProgress}%` : "Downloading…") : "Download"}</Text>
+                <Pressable disabled={dlBusy} onPress={handleDownload} accessibilityRole="button" accessibilityLabel={dlBusy ? "Downloading" : "Download"} hitSlop={8} style={{ minHeight: 48, justifyContent: 'center' }} className={`rounded-full border px-5 py-2.5 active:opacity-80 dark:border-ink-700 ${dlBusy ? "border-sand-200 bg-sand-100 dark:bg-ink-800" : "border-sand-200 bg-sand-50 dark:bg-ink-800"}`}>
+                  <Text className="text-sm font-semibold text-ink dark:text-ink-100">{dlBusy ? (dlProgress !== null ? `${dlProgress}%` : "Downloading…") : "Download"}</Text>
                 </Pressable>
               ) : (
-                <View className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2"><Text className="text-xs font-semibold text-emerald-800">Downloaded</Text></View>
+                <View className="rounded-full border border-forest-200 bg-forest-50 px-4 py-2.5 dark:border-forest-900 dark:bg-forest-900"><Text className="text-xs font-semibold text-forest-700 dark:text-forest-100">Downloaded</Text></View>
               )}
-              <Pressable onPress={handleShare} className="rounded-full border border-sand-200 bg-white px-4 py-2">
-                <Text className="text-sm font-semibold text-ink">Share</Text>
+              <Pressable onPress={handleShare} accessibilityRole="button" accessibilityLabel="Share lecture" hitSlop={8} style={{ minHeight: 48, justifyContent: 'center' }} className="rounded-full border border-sand-200 bg-white px-4 py-2.5 active:opacity-80 dark:border-ink-700 dark:bg-ink-800">
+                <Text className="text-sm font-semibold text-ink dark:text-ink-100">Share</Text>
               </Pressable>
             </View>
             {ep.audio_url && !isDownloaded ? <Text className="text-xs text-ink-400" numberOfLines={1}>{ep.audio_url}</Text> : null}
@@ -136,8 +136,8 @@ export default function LectureScreen() {
             <View className="flex-row gap-2">
               {ep.scholar ? (
                 <Link href={`/scholars/${ep.scholar.slug}` as never} asChild>
-                  <Pressable className="rounded-full bg-forest-50 px-3 py-2">
-                    <Text className="text-xs font-semibold text-forest-700">{ep.scholar.name}</Text>
+                  <Pressable accessibilityRole="button" className="rounded-full bg-forest-50 px-4 py-2.5 active:opacity-80 dark:bg-ink-800" hitSlop={8} style={{ minHeight: 48, justifyContent: 'center' }}>
+                    <Text className="text-xs font-semibold text-forest-700 dark:text-forest-100">{ep.scholar.name}</Text>
                   </Pressable>
                 </Link>
               ) : null}

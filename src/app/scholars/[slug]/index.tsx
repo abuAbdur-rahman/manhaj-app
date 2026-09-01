@@ -1,6 +1,6 @@
 import { Link, useLocalSearchParams } from "expo-router";
 import { useCallback, useState } from "react";
-import { RefreshControl, ScrollView, Text, View } from "react-native";
+import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AudioCard, AudioCardSkeleton } from "@/components/audio-card";
@@ -22,82 +22,91 @@ export default function ScholarDetailScreen() {
 
   if (scholarQ.isPending) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-50">
-        <View className="h-32 bg-sand-100" />
+      <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink">
+        <View className="h-32 bg-sand-100 dark:bg-ink-800" />
       </SafeAreaView>
     );
   }
   if (scholarQ.isError || !scholarQ.data) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-50">
+      <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink">
         <ErrorState message={scholarQ.isError ? "Failed to load scholar" : "Scholar not found"} onRetry={() => scholarQ.refetch()} />
       </SafeAreaView>
     );
   }
 
   const scholar = scholarQ.data;
+  const episodes = episodesQ.data?.slice(0, 10) ?? [];
 
   return (
-    <SafeAreaView className="flex-1 bg-sand-50">
-      <ScrollView contentContainerClassName="gap-6 pb-10" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-        <View className="gap-3 bg-white px-6 py-6 border-b border-sand-200">
-          <View className="h-16 w-16 items-center justify-center rounded-2xl bg-forest-700">
-            <Text className="text-xl font-bold text-white">{scholar.name[0]}</Text>
-          </View>
-          <Text className="text-xl font-bold text-ink">{scholar.name}</Text>
-          {scholar.bio ? <Text className="text-sm leading-5 text-ink-600">{scholar.bio}</Text> : null}
-          <Text className="text-xs text-ink-400">
-            {scholar.series_count ?? 0} series · {scholar.episode_count ?? 0} lectures
-          </Text>
-        </View>
-
-        <View className="gap-3 px-6">
-          <Text className="text-sm font-semibold uppercase tracking-wide text-ink-400">Series</Text>
-          {seriesQ.isPending ? (
-            <View className="h-20 rounded-2xl bg-sand-100" />
-          ) : seriesQ.isError ? (
-            <ErrorState message="Failed to load series" onRetry={() => seriesQ.refetch()} />
-          ) : !seriesQ.data?.length ? (
-            <EmptyState title="No series" description="Series will appear here." />
-          ) : (
-            <View className="gap-3">
-              {seriesQ.data.map((s) => (
-                <Link key={s.id} href={`/scholars/${scholar.slug}/series/${s.slug}` as never} asChild>
-                  <View className="rounded-2xl border border-sand-200 bg-white p-4">
-                    <Text className="text-sm font-semibold text-ink">{s.title}</Text>
-                    {s.description ? (
-                      <Text className="mt-1 text-xs leading-4 text-ink-500" numberOfLines={2}>
-                        {s.description}
-                      </Text>
-                    ) : null}
-                    <Text className="mt-2 text-xs font-medium text-ink-400">{s.episode_count ?? 0} lectures</Text>
-                  </View>
-                </Link>
-              ))}
+    <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink">
+      <FlatList
+        data={episodes}
+        keyExtractor={(e) => e.id}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        contentContainerClassName="gap-6 pb-10"
+        ListHeaderComponent={
+          <View className="gap-6">
+            <View className="gap-3 bg-white dark:bg-ink-800 px-6 py-6 border-b border-sand-200 dark:border-ink-800">
+              <View className="h-16 w-16 items-center justify-center rounded-2xl bg-forest-700">
+                <Text className="text-xl font-bold text-white">{scholar.name[0]}</Text>
+              </View>
+              <Text className="text-xl font-bold text-ink dark:text-white">{scholar.name}</Text>
+              {scholar.bio ? <Text className="text-sm leading-5 text-ink-600 dark:text-ink-300">{scholar.bio}</Text> : null}
+              <Text className="text-xs text-ink-400 dark:text-ink-500">
+                {scholar.series_count ?? 0} series · {scholar.episode_count ?? 0} lectures
+              </Text>
             </View>
-          )}
-        </View>
 
-        <View className="gap-3 px-6">
-          <Text className="text-sm font-semibold uppercase tracking-wide text-ink-400">Latest lectures</Text>
-          {episodesQ.isPending ? (
-            <View className="gap-3">
+            <View className="gap-3 px-6">
+              <Text className="text-sm font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-500">Series</Text>
+              {seriesQ.isPending ? (
+                <View className="h-20 rounded-2xl bg-sand-100 dark:bg-ink-800" />
+              ) : seriesQ.isError ? (
+                <ErrorState message="Failed to load series" onRetry={() => seriesQ.refetch()} />
+              ) : !seriesQ.data?.length ? (
+                <EmptyState title="No series" description="Series will appear here." />
+              ) : (
+                <View className="gap-3">
+                  {seriesQ.data.map((s) => (
+                    <Link key={s.id} href={`/scholars/${scholar.slug}/series/${s.slug}` as never} asChild>
+                      <Pressable accessibilityRole="button" hitSlop={8} className="rounded-2xl border border-sand-200 dark:border-ink-700 bg-white dark:bg-ink-800 p-4 active:opacity-80" style={{ minHeight: 48 }}>
+                        <Text className="text-sm font-semibold text-ink dark:text-white">{s.title}</Text>
+                        {s.description ? (
+                          <Text className="mt-1 text-xs leading-4 text-ink-500 dark:text-ink-400" numberOfLines={2}>
+                            {s.description}
+                          </Text>
+                        ) : null}
+                        <Text className="mt-2 text-xs font-medium text-ink-400 dark:text-ink-500">{s.episode_count ?? 0} lectures</Text>
+                      </Pressable>
+                    </Link>
+                  ))}
+                </View>
+              )}
+            </View>
+
+            <View className="px-6">
+              <Text className="text-sm font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-500">Latest lectures</Text>
+            </View>
+          </View>
+        }
+        ListEmptyComponent={
+          episodesQ.isPending ? (
+            <View className="gap-3 px-6">
               <AudioCardSkeleton />
               <AudioCardSkeleton />
             </View>
           ) : episodesQ.isError ? (
-            <ErrorState message="Failed to load lectures" onRetry={() => episodesQ.refetch()} />
-          ) : !episodesQ.data?.length ? (
-            <EmptyState title="No lectures" />
+            <View className="px-6"><ErrorState message="Failed to load lectures" onRetry={() => episodesQ.refetch()} /></View>
           ) : (
-            <View className="gap-3">
-              {episodesQ.data.slice(0, 10).map((e, i) => (
-                <AudioCard key={e.id} episode={e} number={i + 1} />
-              ))}
-            </View>
-          )}
-        </View>
-      </ScrollView>
+            <View className="px-6"><EmptyState title="No lectures" /></View>
+          )
+        }
+        renderItem={({ item, index }) => (
+          <View className="px-6"><AudioCard episode={item} number={index + 1} /></View>
+        )}
+        ItemSeparatorComponent={() => <View className="h-3" />}
+      />
     </SafeAreaView>
   );
 }

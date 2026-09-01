@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useState } from "react";
-import { RefreshControl, ScrollView, Text, View } from "react-native";
+import { FlatList, RefreshControl, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AudioCard, AudioCardSkeleton } from "@/components/audio-card";
@@ -19,7 +19,7 @@ export default function SeriesDetailScreen() {
 
   if (q.isPending) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-50">
+      <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink">
         <View className="gap-3 p-6">
           <AudioCardSkeleton />
           <AudioCardSkeleton />
@@ -29,7 +29,7 @@ export default function SeriesDetailScreen() {
   }
   if (q.isError || !q.data) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-50">
+      <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink">
         <ErrorState message={q.isError ? "Failed to load series" : "Series not found"} onRetry={() => q.refetch()} />
       </SafeAreaView>
     );
@@ -38,22 +38,24 @@ export default function SeriesDetailScreen() {
   const { series, episodes } = q.data;
 
   return (
-    <SafeAreaView className="flex-1 bg-sand-50">
-      <ScrollView contentContainerClassName="gap-6 pb-10" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-        <View className="gap-2 bg-white px-6 py-6 border-b border-sand-200">
-          <Text className="text-[11px] font-semibold uppercase tracking-widest text-forest-600">{series.scholar?.name}</Text>
-          <Text className="text-xl font-bold text-ink">{series.title}</Text>
-          {series.description ? <Text className="text-sm leading-5 text-ink-600">{series.description}</Text> : null}
-          <Text className="text-xs text-ink-400">{episodes.length} lectures</Text>
-        </View>
-        <View className="gap-3 px-6">
-          {!episodes.length ? (
-            <EmptyState title="No lectures in this series" />
-          ) : (
-            episodes.map((e, i) => <AudioCard key={e.id} episode={e} number={i + 1} />)
-          )}
-        </View>
-      </ScrollView>
+    <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink">
+      <FlatList
+        data={episodes}
+        keyExtractor={(e) => e.id}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        contentContainerClassName="pb-10"
+        ListHeaderComponent={
+          <View className="gap-2 bg-white dark:bg-ink-800 px-6 py-6 border-b border-sand-200 dark:border-ink-800 mb-6">
+            <Text className="text-xs font-semibold uppercase tracking-widest text-forest-600 dark:text-forest-400">{series.scholar?.name}</Text>
+            <Text className="text-xl font-bold text-ink dark:text-white">{series.title}</Text>
+            {series.description ? <Text className="text-sm leading-5 text-ink-600 dark:text-ink-300">{series.description}</Text> : null}
+            <Text className="text-xs text-ink-400 dark:text-ink-500">{episodes.length} lectures</Text>
+          </View>
+        }
+        ListEmptyComponent={<View className="px-6"><EmptyState title="No lectures in this series" /></View>}
+        renderItem={({ item, index }) => <View className="px-6"><AudioCard episode={item} number={index + 1} /></View>}
+        ItemSeparatorComponent={() => <View className="h-3" />}
+      />
     </SafeAreaView>
   );
 }
