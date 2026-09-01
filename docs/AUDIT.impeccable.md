@@ -1,4 +1,9 @@
-# Impeccable Audit — manhaj-app 2026-09-01
+# Impeccable Audit — manhaj-app 2026-09-01 (pre-fix baseline)
+
+> Historical baseline recorded BEFORE the multi-agent review (Critical + Important fixes) and
+> CodeRabbit rounds were applied. Scores below describe the pre-fix state; several claims no
+> longer hold on `main`/`dev` (e.g. `accessibility*` props, `dark:` variants, touch targets,
+> predictive back gesture, tab icons). Keep as reference only.
 
 Health: **7/20 Poor** — android target, NativeWind, track-player
 

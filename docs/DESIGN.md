@@ -6,7 +6,7 @@
 
 | Token | Light | Dark | Usage |
 |-------|-------|------|-------|
-| `forest-*` | 600 #2d5a3d | 400 tint | primary actions, active states |
+| `forest-*` | 600 #155732 | 400 tint | primary actions, active states |
 | `sand-*` | 50 #fafaf7, 100,200 | `ink-800` bg, `ink-700` border | surface, cards, dividers |
 | `ink` | #1a1a1a | white | headings |
 | `ink-500/400` | muted | 400/500 flipped | secondary text |

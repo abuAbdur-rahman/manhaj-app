@@ -158,7 +158,13 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     if (index < 0 || index >= queue.length) return;
     const ep = queue[index];
     set((s) => {
-      const next = { ...episodeState(ep), queueIndex: index } as Partial<PlayerStore>;
+      const next = {
+        currentEpisode: ep,
+        queueIndex: index,
+        currentTime: 0,
+        duration: ep.duration_seconds ?? 0,
+        isLoading: false,
+      } as Partial<PlayerStore>;
       const merged = { ...s, ...next } as PlayerStore;
       persist(merged);
       return next;
@@ -220,6 +226,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     set(() => {
       try {
         kvDelete(PLAYER_STATE_KEY);
+        kvDelete(PLAYER_POSITION_KEY);
       } catch {}
       if (persistTimeDebounce) clearTimeout(persistTimeDebounce);
       return {

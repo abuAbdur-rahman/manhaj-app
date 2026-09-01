@@ -32,6 +32,8 @@ export class ErrorBoundary extends Component<Props, State> {
         <Pressable
           onPress={() => this.setState({ hasError: false })}
           accessibilityRole="button"
+          hitSlop={8}
+          style={{ minHeight: 44, justifyContent: "center" }}
           className="rounded-full bg-forest-600 px-6 py-2.5 active:opacity-90 dark:bg-forest-500"
         >
           <Text className="text-sm font-semibold text-white">Try again</Text>

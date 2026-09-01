@@ -9,9 +9,8 @@ export function registerBackgroundPlayback() {
     // notification/headset transport controls (native handling).
     TrackPlayer.addEventListener(Event.MediaItemTransition, (e) => {
       try {
-        const { setActiveIndex, setPlaying } = usePlayerStore.getState();
+        const { setActiveIndex } = usePlayerStore.getState();
         if (typeof e.index === "number" && e.index >= 0) setActiveIndex(e.index);
-        if (e.item !== null) setPlaying(true);
       } catch {}
     });
     TrackPlayer.addEventListener(Event.IsPlayingChanged, (e) => {
