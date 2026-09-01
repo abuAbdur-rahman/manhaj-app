@@ -1,4 +1,4 @@
-import TrackPlayer, { Capability, AppKilledPlaybackBehavior, State } from "react-native-track-player";
+import TrackPlayer, { PlayerCommand } from "@rntp/player";
 import type { Episode } from "@/types";
 import { getLocalUri } from "@/lib/downloads";
 import { logAppError } from "@/lib/logError";
@@ -12,14 +12,21 @@ export async function setupTrackPlayer(): Promise<void> {
   if (setupDone) return;
   if (setupPromise) return setupPromise;
   setupPromise = (async () => {
-    await TrackPlayer.setupPlayer({ autoHandleInterruptions: true });
-    await TrackPlayer.updateOptions({
+    // v5: setupPlayer/setCommands are synchronous JSI (void) — still guard dedup
+    TrackPlayer.setupPlayer({
+      contentType: "speech",
+      handleAudioBecomingNoisy: true,
       android: {
-        appKilledPlaybackBehavior: AppKilledPlaybackBehavior.StopPlaybackAndRemoveNotification,
+        taskRemovedBehavior: "stop",
       },
-      capabilities: [Capability.Play, Capability.Pause, Capability.SeekTo, Capability.SkipToNext, Capability.SkipToPrevious, Capability.SetRating],
-      compactCapabilities: [Capability.Play, Capability.Pause],
-      progressUpdateEventInterval: 1,
+    });
+    TrackPlayer.setCommands({
+      capabilities: [
+        PlayerCommand.PlayPause,
+        PlayerCommand.Next,
+        PlayerCommand.Previous,
+        PlayerCommand.Seek,
+      ],
     });
     setupDone = true;
   })();
@@ -43,22 +50,21 @@ export async function playEpisode(episode: Episode, queue?: Episode[]): Promise<
     if (!url) throw new Error("No audio URL");
 
     await setupTrackPlayer();
-    await TrackPlayer.reset();
+    TrackPlayer.clear();
     const tracks = (queue ?? [episode]).map((ep) => {
       const u = getLocalUri(ep.id) ?? ep.audio_url;
       if (!u) throw new Error(`Episode ${ep.title} has no audio URL`);
       return {
-        id: ep.id,
+        mediaId: ep.id,
         url: u as string,
         title: ep.title,
         artist: ep.scholar?.name ?? "Manhaj Sunnah",
-        artwork: (ep.series as unknown as { cover_url?: string })?.cover_url ?? ep.scholar?.photo_url ?? undefined,
+        artworkUrl: (ep.series as unknown as { cover_url?: string })?.cover_url ?? ep.scholar?.photo_url ?? undefined,
         duration: ep.duration_seconds ?? undefined,
       };
     });
-    await TrackPlayer.add(tracks);
-    if (startIndex > 0) await TrackPlayer.skip(startIndex);
-    await TrackPlayer.play();
+    TrackPlayer.setMediaItems(tracks, startIndex);
+    TrackPlayer.play();
     usePlayerStore.getState().setPlaying(true);
     usePlayerStore.getState().setLoading(false);
   } catch (e) {
@@ -69,14 +75,12 @@ export async function playEpisode(episode: Episode, queue?: Episode[]): Promise<
 
 export async function togglePlayPause(): Promise<void> {
   try {
-    const playbackState = await TrackPlayer.getPlaybackState();
-    const st = (playbackState as unknown as { state?: State })?.state ?? (playbackState as unknown as State);
-    const isPlaying = st === State.Playing;
+    const isPlaying = TrackPlayer.isPlaying();
     if (isPlaying) {
-      await TrackPlayer.pause();
+      TrackPlayer.pause();
       usePlayerStore.getState().setPlaying(false);
     } else {
-      await TrackPlayer.play();
+      TrackPlayer.play();
       usePlayerStore.getState().setPlaying(true);
     }
   } catch (e) {
@@ -86,5 +90,5 @@ export async function togglePlayPause(): Promise<void> {
 }
 
 export async function seekTo(seconds: number): Promise<void> {
-  await TrackPlayer.seekTo(seconds);
+  TrackPlayer.seekTo(seconds);
 }

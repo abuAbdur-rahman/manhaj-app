@@ -4,9 +4,9 @@ import { useState } from "react";
 import { Alert, Pressable, ScrollView, Share, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { EmptyState, ErrorState } from "@/components/empty-state";
+import { ErrorState } from "@/components/empty-state";
 import { formatDuration } from "@/lib/audio";
-import { downloadEpisode, getDownload, getLocalUri } from "@/lib/downloads";
+import { downloadEpisode, getLocalUri } from "@/lib/downloads";
 import { playEpisode } from "@/lib/trackPlayer";
 import { useEpisodeBySlug } from "@/hooks/useManhajQueries";
 

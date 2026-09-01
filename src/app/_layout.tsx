@@ -1,10 +1,9 @@
 import "@/global.css";
 
-import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { QueryClientProvider, focusManager } from "@tanstack/react-query";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
-import { AppState, View, useColorScheme } from "react-native";
+import { AppState, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
@@ -13,12 +12,19 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { MiniPlayer } from "@/components/mini-player";
 import { createNativePersister } from "@/lib/query-persister";
 import { queryClient } from "@/lib/queryClient";
+import { registerBackgroundPlayback } from "@/service/PlaybackService";
+import { usePlayerStore } from "@/store/player";
+
+// Register playback session before UI mounts — required for headless/ background
+// and Android Auto/CarPlay where JS runtime may not be running for Remote* events.
+// Safe on web: native module is a no-op (web engine ignores service bridge).
+try {
+  registerBackgroundPlayback();
+} catch {}
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
   useEffect(() => {
     // restore persisted queries then hide splash
     (async () => {
@@ -32,13 +38,9 @@ export default function RootLayout() {
       await SplashScreen.hideAsync();
     })();
     try {
-      require("@/store/player").usePlayerStore.getState().hydrate();
+      usePlayerStore.getState().hydrate();
     } catch {}
     (async () => {
-      try {
-        const TP = await import("react-native-track-player");
-        await TP.default.registerPlaybackService(() => require("@/service/PlaybackService").PlaybackService);
-      } catch {}
       try {
         const { setupTrackPlayer } = await import("@/lib/trackPlayer");
         await setupTrackPlayer();
@@ -52,13 +54,11 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-            <AnimatedSplashOverlay />
-            <View style={{ flex: 1 }}>
-              <AppTabs />
-              <MiniPlayer />
-            </View>
-          </ThemeProvider>
+          <AnimatedSplashOverlay />
+          <View style={{ flex: 1 }}>
+            <AppTabs />
+            <MiniPlayer />
+          </View>
         </QueryClientProvider>
       </ErrorBoundary>
     </GestureHandlerRootView>
