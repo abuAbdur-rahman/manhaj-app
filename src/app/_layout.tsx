@@ -12,6 +12,15 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { MiniPlayer } from "@/components/mini-player";
 import { createNativePersister } from "@/lib/query-persister";
 import { queryClient } from "@/lib/queryClient";
+import { registerBackgroundPlayback } from "@/service/PlaybackService";
+import { usePlayerStore } from "@/store/player";
+
+// Register playback session before UI mounts — required for headless/ background
+// and Android Auto/CarPlay where JS runtime may not be running for Remote* events.
+// Safe on web: native module is a no-op (web engine ignores service bridge).
+try {
+  registerBackgroundPlayback();
+} catch {}
 
 SplashScreen.preventAutoHideAsync();
 
@@ -29,13 +38,9 @@ export default function RootLayout() {
       await SplashScreen.hideAsync();
     })();
     try {
-      require("@/store/player").usePlayerStore.getState().hydrate();
+      usePlayerStore.getState().hydrate();
     } catch {}
     (async () => {
-      try {
-        const { registerBackgroundPlayback } = await import("@/service/PlaybackService");
-        registerBackgroundPlayback();
-      } catch {}
       try {
         const { setupTrackPlayer } = await import("@/lib/trackPlayer");
         await setupTrackPlayer();

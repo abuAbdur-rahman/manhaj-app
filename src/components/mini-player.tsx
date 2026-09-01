@@ -2,7 +2,7 @@ import { Link } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import TrackPlayer, { useIsPlaying, useProgress } from "@rntp/player";
-import { usePlayerStore } from "@/store/player";
+import { usePlayerStore, flushPositionPersist } from "@/store/player";
 import { formatDuration } from "@/lib/audio";
 import { togglePlayPause } from "@/lib/trackPlayer";
 import { QueueSheet } from "@/components/queue-sheet";
@@ -13,7 +13,7 @@ export function MiniPlayer() {
   const progress = useProgress(1);
   const [showQueue, setShowQueue] = useState(false);
 
-  // tick sleep timer + sync progress (v5: sync JSI getProgress)
+  // tick sleep timer + sync progress (v5: sync JSI getProgress); flush position on pause/unmount
   useEffect(() => {
     const i = setInterval(() => {
       try {
@@ -24,17 +24,17 @@ export function MiniPlayer() {
       const s = usePlayerStore.getState();
       if (s.sleepTimerRemaining !== null) {
         s.tickSleepTimer();
-        if (getSnapshotSleepDone()) {
+        if (usePlayerStore.getState().sleepTimerRemaining === null) {
           try { TrackPlayer.pause(); } catch {}
+          flushPositionPersist();
         }
       }
     }, 1000);
-    return () => clearInterval(i);
+    return () => {
+      clearInterval(i);
+      flushPositionPersist();
+    };
   }, []);
-
-  function getSnapshotSleepDone() {
-    return usePlayerStore.getState().sleepTimerRemaining === null;
-  }
 
   if (!currentEpisode) return null;
 

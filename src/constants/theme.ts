@@ -22,7 +22,7 @@ export const Colors = {
     background: '#0e1210',
     backgroundElement: '#1c231e',
     backgroundSelected: '#2a332c',
-    textSecondary: '#5c6b60',
+    textSecondary: '#a3b5a8',
     forest: '#1a6b3c',
     forestMuted: '#0f4126',
     clay: '#c2754a',

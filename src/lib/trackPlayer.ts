@@ -6,26 +6,35 @@ import { requestNotificationPermissionOnce } from "@/lib/permissions";
 import { usePlayerStore } from "@/store/player";
 
 let setupDone = false;
+let setupPromise: Promise<void> | null = null;
 
 export async function setupTrackPlayer(): Promise<void> {
   if (setupDone) return;
-  // v5: setupPlayer is synchronous (JSI), but we keep async wrapper for callers
-  TrackPlayer.setupPlayer({
-    contentType: "speech",
-    handleAudioBecomingNoisy: true,
-    android: {
-      taskRemovedBehavior: "stop",
-    },
-  });
-  TrackPlayer.setCommands({
-    capabilities: [
-      PlayerCommand.PlayPause,
-      PlayerCommand.Next,
-      PlayerCommand.Previous,
-      PlayerCommand.Seek,
-    ],
-  });
-  setupDone = true;
+  if (setupPromise) return setupPromise;
+  setupPromise = (async () => {
+    // v5: setupPlayer/setCommands are synchronous JSI (void) — still guard dedup
+    TrackPlayer.setupPlayer({
+      contentType: "speech",
+      handleAudioBecomingNoisy: true,
+      android: {
+        taskRemovedBehavior: "stop",
+      },
+    });
+    TrackPlayer.setCommands({
+      capabilities: [
+        PlayerCommand.PlayPause,
+        PlayerCommand.Next,
+        PlayerCommand.Previous,
+        PlayerCommand.Seek,
+      ],
+    });
+    setupDone = true;
+  })();
+  try {
+    await setupPromise;
+  } finally {
+    setupPromise = null;
+  }
 }
 
 export async function playEpisode(episode: Episode, queue?: Episode[]): Promise<void> {

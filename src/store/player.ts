@@ -34,9 +34,36 @@ function persist(state: Pick<PlayerStore, "currentEpisode" | "queue" | "queueInd
   } catch {}
 }
 let persistTimeDebounce: ReturnType<typeof setTimeout> | null = null;
+let lastPersistAt = 0;
+export function flushPositionPersist() {
+  if (persistTimeDebounce) {
+    clearTimeout(persistTimeDebounce);
+    persistTimeDebounce = null;
+  }
+  // persist latest in-memory state synchronously
+  try {
+    const s = usePlayerStore.getState();
+    persist(s);
+    lastPersistAt = Date.now();
+  } catch {}
+}
 function persistTimeDebounced(state: PlayerStore) {
-  if (persistTimeDebounce) clearTimeout(persistTimeDebounce);
-  persistTimeDebounce = setTimeout(() => persist(state), 5000);
+  const now = Date.now();
+  const elapsed = now - lastPersistAt;
+  // throttle: persist at most every 5s during continuous playback, otherwise debounce 5s
+  if (elapsed >= 5000) {
+    if (persistTimeDebounce) clearTimeout(persistTimeDebounce);
+    persistTimeDebounce = null;
+    persist(state);
+    lastPersistAt = now;
+    return;
+  }
+  if (persistTimeDebounce) return;
+  persistTimeDebounce = setTimeout(() => {
+    persist(state);
+    lastPersistAt = Date.now();
+    persistTimeDebounce = null;
+  }, 5000);
 }
 
 interface PlayerStore {
