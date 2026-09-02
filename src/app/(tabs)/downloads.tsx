@@ -1,10 +1,10 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert, FlatList, Pressable, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "expo-router";
 
 import { EmptyState } from "@/components/empty-state";
-import { getAllDownloads, getStorageCapBytes, getStorageUsedBytes, removeAllDownloads, removeDownload, setStorageCapBytes } from "@/lib/downloads";
+import { getAllDownloads, getStorageCapBytes, getStorageUsedBytes, removeAllDownloads, removeDownload, setStorageCapBytes, subscribeDownloads } from "@/lib/downloads";
 import type { DownloadRow } from "@/lib/downloads";
 
 function fmtBytes(n: number): string {
@@ -17,15 +17,18 @@ function fmtBytes(n: number): string {
 export default function DownloadsScreen() {
   const [rows, setRows] = useState<DownloadRow[]>([]);
   const [used, setUsed] = useState(0);
-  const cap = getStorageCapBytes();
+  const [cap, setCap] = useState(getStorageCapBytes());
 
   const insets = useSafeAreaInsets();
   const refresh = useCallback(() => {
     setRows(getAllDownloads());
     setUsed(getStorageUsedBytes());
+    setCap(getStorageCapBytes());
   }, []);
 
+  // refresh on tab focus AND when downloads change while mounted elsewhere
   useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
+  useEffect(() => subscribeDownloads(refresh), [refresh]);
 
   const handleRemove = (id: string) => {
     Alert.alert("Remove download?", "Delete the local file.", [
@@ -62,7 +65,6 @@ export default function DownloadsScreen() {
             <View className="rounded-2xl border border-sand-200 dark:border-ink-800 bg-white dark:bg-ink-800 p-4 gap-2">
               <Text className="text-sm font-semibold text-ink dark:text-white" numberOfLines={2}>{item.title}</Text>
               <Text className="text-xs text-ink-500 dark:text-ink-400">{item.scholar_name} · {fmtBytes(item.file_size_bytes)} · {new Date(item.downloaded_at).toLocaleDateString()}</Text>
-              <Text className="text-xs text-ink-400 dark:text-ink-400" numberOfLines={1}>{item.file_uri}</Text>
               <View className="flex-row gap-2 pt-1">
                 <Pressable onPress={() => handleRemove(item.episode_id)} accessibilityRole="button" accessibilityLabel={`Remove ${item.title}`} hitSlop={8} style={{ minHeight: 48, justifyContent: 'center' }} className="rounded-full border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-5 py-2.5"><Text className="text-xs font-semibold text-red-700 dark:text-red-300">Remove</Text></Pressable>
               </View>

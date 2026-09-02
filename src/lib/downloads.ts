@@ -69,6 +69,68 @@ export type DownloadRow = {
   file_size_bytes: number;
 };
 
+type Listener = () => void;
+const listeners = new Set<Listener>();
+function notifyDownloadsChanged() {
+  for (const l of listeners) l();
+}
+export function subscribeDownloads(listener: Listener): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+export type DownloadProgress = {
+  episodeId: string;
+  title: string;
+  writtenBytes: number;
+  totalBytes: number;
+  percent: number;
+};
+
+const activeMap = new Map<string, DownloadProgress>();
+let progressListeners = new Set<(p: DownloadProgress | null) => void>();
+
+function getPrimaryProgress(): DownloadProgress | null {
+  if (activeMap.size === 0) return null;
+  // most recently updated is last inserted (upsert re-inserts)
+  let last: DownloadProgress | null = null;
+  for (const v of activeMap.values()) last = v;
+  return last;
+}
+
+export function getActiveDownloadProgress(): DownloadProgress | null {
+  return getPrimaryProgress();
+}
+export function subscribeDownloadProgress(listener: (p: DownloadProgress | null) => void): () => void {
+  progressListeners.add(listener);
+  listener(getPrimaryProgress());
+  return () => {
+    progressListeners.delete(listener);
+  };
+}
+function notifyProgress() {
+  const primary = getPrimaryProgress();
+  for (const l of progressListeners) l(primary);
+}
+function upsertProgress(p: DownloadProgress) {
+  activeMap.delete(p.episodeId);
+  activeMap.set(p.episodeId, p);
+  notifyProgress();
+}
+function clearProgress(episodeId: string) {
+  activeMap.delete(episodeId);
+  notifyProgress();
+}
+// kept for backwards compat — clears single entry if given, or all if null
+function setActiveDownload(p: DownloadProgress | null) {
+  if (p === null) {
+    activeMap.clear();
+    notifyProgress();
+    return;
+  }
+  upsertProgress(p);
+}
+
 export function getAllDownloads(): DownloadRow[] {
   return getDb().getAllSync<DownloadRow>(`SELECT * FROM downloads ORDER BY downloaded_at DESC`);
 }
@@ -126,10 +188,25 @@ export async function downloadEpisode(ep: Episode, onProgress?: (written: number
   const dir = await ensureAudioDir();
   const dest = `${dir}${ep.id}.mp3`;
 
-  const dl = FileSystem.createDownloadResumable(ep.audio_url, dest, {}, (p) => onProgress?.(p.totalBytesWritten, p.totalBytesExpectedToWrite));
-  const res = await dl.downloadAsync();
+  upsertProgress({ episodeId: ep.id, title: ep.title, writtenBytes: 0, totalBytes: expected, percent: 0 });
+  const dl = FileSystem.createDownloadResumable(ep.audio_url, dest, {}, (p) => {
+    const total = p.totalBytesExpectedToWrite > 0 ? p.totalBytesExpectedToWrite : expected;
+    const percent = total > 0 ? Math.min(100, Math.round((p.totalBytesWritten / total) * 100)) : 0;
+    upsertProgress({ episodeId: ep.id, title: ep.title, writtenBytes: p.totalBytesWritten, totalBytes: total, percent });
+    onProgress?.(p.totalBytesWritten, total);
+  });
+  let res: Awaited<ReturnType<typeof dl.downloadAsync>>;
+  try {
+    res = await dl.downloadAsync();
+  } catch (e) {
+    clearProgress(ep.id);
+    throw e;
+  }
   const resUri = res?.uri ?? null;
-  if (!resUri) throw new Error("Download failed — no file returned");
+  if (!resUri) {
+    clearProgress(ep.id);
+    throw new Error("Download failed — no file returned");
+  }
 
   let sizeBytes = expected;
   const dlInfo = await FileSystem.getInfoAsync(resUri);
@@ -142,6 +219,7 @@ export async function downloadEpisode(ep: Episode, onProgress?: (written: number
   const usedAfter = getStorageUsedBytes();
   if (usedAfter + sizeBytes > cap) {
     await FileSystem.deleteAsync(resUri, { idempotent: true });
+    clearProgress(ep.id);
     throw new Error("Download would exceed 2 GB cap — remove some downloads first.");
   }
 
@@ -153,6 +231,8 @@ export async function downloadEpisode(ep: Episode, onProgress?: (written: number
     new Date().toISOString(),
     sizeBytes,
   ]);
+  clearProgress(ep.id);
+  notifyDownloadsChanged();
   return resUri;
 }
 
@@ -163,6 +243,7 @@ export async function removeDownload(episodeId: string): Promise<void> {
       await FileSystem.deleteAsync(row.file_uri, { idempotent: true });
     } catch {}
     getDb().runSync(`DELETE FROM downloads WHERE episode_id = ?`, [episodeId]);
+    notifyDownloadsChanged();
   }
 }
 
@@ -178,4 +259,5 @@ export async function removeAllDownloads(): Promise<void> {
   try {
     await FileSystem.deleteAsync(audioDir(), { idempotent: true });
   } catch {}
+  notifyDownloadsChanged();
 }

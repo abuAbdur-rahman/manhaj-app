@@ -62,7 +62,7 @@ export default function SearchScreen() {
             </Pressable>
           ))}
         </View>
-        <Text className="text-xs text-ink-400 dark:text-ink-400">Search powered by manhaj-sunnah.vercel.app/api/search</Text>
+        <Text className="text-xs text-ink-400 dark:text-ink-400">Search lectures by title, scholar, or topic.</Text>
       </View>
 
       {!showResults ? (

@@ -4,6 +4,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useFocusEffect } from "expo-router";
 
 import { getStorageCapBytes, getStorageUsedBytes, getWifiOnly, setWifiOnly, setStorageCapBytes } from "@/lib/downloads";
+import { BottomTabInset } from "@/constants/theme";
 import { useThemeStore, type ThemePreference } from "@/store/theme";
 
 function fmtBytes(n: number): string {
@@ -29,7 +30,7 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink-950">
-      <ScrollView contentContainerStyle={{ padding: 24, gap: 16, paddingBottom: Math.max(40, insets.bottom + 24) }}>
+      <ScrollView contentContainerStyle={{ padding: 24, gap: 16, paddingBottom: Math.max(40, insets.bottom + BottomTabInset + 24) }}>
         <View className="gap-1">
           <Text className="text-xl font-bold text-ink dark:text-white">Settings</Text>
           <Text className="text-sm text-ink-500 dark:text-ink-400">Manhaj Sunnah · com.manhaj.app · storage + playback</Text>
@@ -70,7 +71,7 @@ export default function SettingsScreen() {
           <View className="flex-row items-center justify-between">
             <View className="flex-1 pr-3 gap-1">
               <Text className="text-sm font-semibold text-ink dark:text-white">Wi-Fi only downloads</Text>
-              <Text className="text-xs leading-4 text-ink-500 dark:text-ink-400">When on, downloads warn on cellular (default off — spec).</Text>
+              <Text className="text-xs leading-4 text-ink-500 dark:text-ink-400">Ask before downloading over cellular data.</Text>
             </View>
             <Switch value={wifiOnly} onValueChange={(v) => { setWifiOnly(v); refresh(); }} accessibilityLabel="Wi-Fi only downloads" />
           </View>
@@ -78,15 +79,15 @@ export default function SettingsScreen() {
 
         <View className="rounded-2xl border border-sand-200 dark:border-ink-800 bg-white dark:bg-ink-800 p-4 gap-3">
           <Text className="text-sm font-semibold text-ink dark:text-white">Support</Text>
-          <Text className="text-xs leading-4 text-ink-500 dark:text-ink-400">Questions or feedback — reach us on WhatsApp or Telegram.</Text>
+          <Text className="text-xs leading-4 text-ink-500 dark:text-ink-400">Questions or feedback - we&apos;d love to hear from you.</Text>
           <View className="flex-row flex-wrap gap-2 pt-1">
-            {process.env.EXPO_PUBLIC_SUPPORT_WHATSAPP_URL ? (
-              <Pressable onPress={() => Linking.openURL(process.env.EXPO_PUBLIC_SUPPORT_WHATSAPP_URL!)} accessibilityRole="button" hitSlop={8} style={{ minHeight: 48, justifyContent: 'center' }} className="rounded-full bg-forest-600 px-5 py-2.5"><Text className="text-xs font-semibold text-white">WhatsApp</Text></Pressable>
-            ) : null}
-            {process.env.EXPO_PUBLIC_SUPPORT_TELEGRAM_URL ? (
-              <Pressable onPress={() => Linking.openURL(process.env.EXPO_PUBLIC_SUPPORT_TELEGRAM_URL!)} accessibilityRole="button" hitSlop={8} style={{ minHeight: 48, justifyContent: 'center' }} className="rounded-full border border-sand-200 dark:border-ink-700 bg-white dark:bg-ink-900 px-5 py-2.5"><Text className="text-xs font-semibold text-ink dark:text-white">Telegram</Text></Pressable>
-            ) : null}
-          </View>
+          {process.env.EXPO_PUBLIC_SUPPORT_WHATSAPP_URL ? (
+            <Pressable onPress={() => Linking.openURL(process.env.EXPO_PUBLIC_SUPPORT_WHATSAPP_URL!)} accessibilityRole="button" hitSlop={8} style={{ minHeight: 48, justifyContent: 'center' }} className="rounded-full bg-forest-600 px-5 py-2.5"><Text className="text-xs font-semibold text-white">WhatsApp</Text></Pressable>
+          ) : null}
+          {process.env.EXPO_PUBLIC_SUPPORT_TELEGRAM_URL ? (
+            <Pressable onPress={() => Linking.openURL(process.env.EXPO_PUBLIC_SUPPORT_TELEGRAM_URL!)} accessibilityRole="button" hitSlop={8} style={{ minHeight: 48, justifyContent: 'center' }} className="rounded-full border border-sand-200 dark:border-ink-700 bg-white dark:bg-ink-900 px-5 py-2.5"><Text className="text-xs font-semibold text-ink dark:text-white">Telegram</Text></Pressable>
+          ) : null}
+        </View>
           <Text className="text-xs text-ink-400 dark:text-ink-400">Set EXPO_PUBLIC_SUPPORT_WHATSAPP_URL / EXPO_PUBLIC_SUPPORT_TELEGRAM_URL to show contact buttons.</Text>
         </View>
 
