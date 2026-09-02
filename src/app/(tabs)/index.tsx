@@ -6,6 +6,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { AudioCard, AudioCardSkeleton } from "@/components/audio-card";
 import { EmptyState, ErrorState } from "@/components/empty-state";
 import { useFeaturedSeries, useRecentEpisodes, useScholars } from "@/hooks/useManhajQueries";
+import { formatCount } from "@/lib/format";
 import type { Episode } from "@/types";
 
 export default function HomeScreen() {
@@ -55,7 +56,7 @@ export default function HomeScreen() {
                           <Text className="text-xs font-semibold uppercase tracking-widest text-forest-600 dark:text-forest-100">{s.scholar?.name ?? "Series"}</Text>
                           <Text className="mt-1 text-base font-bold text-ink dark:text-ink-100">{s.title}</Text>
                           {s.description ? <Text className="mt-1 text-sm leading-5 text-ink-600 dark:text-ink-400" numberOfLines={2}>{s.description}</Text> : null}
-                          <Text className="mt-2 text-xs font-medium text-ink-400">{s.episode_count ?? 0} lectures</Text>
+                          <Text className="mt-2 text-xs font-medium text-ink-400">{formatCount(s.episode_count, "lecture", "lectures")}</Text>
                         </Pressable>
                       </Link>
                     ) : null,
@@ -68,7 +69,7 @@ export default function HomeScreen() {
               <View className="flex-row items-center justify-between">
                 <Text className="text-sm font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-400">Recent</Text>
                 <Link href="/scholars" asChild>
-                  <Pressable accessibilityRole="button" accessibilityLabel="Browse scholars" hitSlop={8} style={{ minHeight: 48, justifyContent: "center", paddingHorizontal: 12 }} className="rounded-full bg-sand-100 dark:bg-ink-800"><Text className="text-xs font-semibold text-forest-700 dark:text-forest-100">Browse scholars →</Text></Pressable>
+                  <Pressable accessibilityRole="button" accessibilityLabel="Browse scholars" hitSlop={8} style={{ minHeight: 48, justifyContent: "center", paddingHorizontal: 12 }} className="rounded-full bg-sand-100 dark:bg-ink-800"><Text className="text-xs font-semibold text-forest-700 dark:text-forest-100">Browse scholars</Text></Pressable>
                 </Link>
               </View>
               {recent.isPending ? (
@@ -102,7 +103,7 @@ export default function HomeScreen() {
                         <Text className="text-base font-bold text-white">{sc.name[0]}</Text>
                       </View>
                       <Text className="text-center text-xs font-semibold text-ink dark:text-ink-100" numberOfLines={2}>{sc.name}</Text>
-                      <Text className="text-xs text-ink-400">{sc.episode_count ?? 0} lectures</Text>
+                      <Text className="text-xs text-ink-400">{formatCount(sc.episode_count, "lecture", "lectures")}</Text>
                     </Pressable>
                   </Link>
                 )}

@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AudioCard, AudioCardSkeleton } from "@/components/audio-card";
 import { EmptyState, ErrorState } from "@/components/empty-state";
 import { useSeriesWithEpisodes } from "@/hooks/useManhajQueries";
+import { formatCount } from "@/lib/format";
 
 export default function SeriesDetailScreen() {
   const { slug, seriesSlug } = useLocalSearchParams<{ slug: string; seriesSlug: string }>();
@@ -49,7 +50,7 @@ export default function SeriesDetailScreen() {
             <Text className="text-xs font-semibold uppercase tracking-widest text-forest-600 dark:text-forest-100">{series.scholar?.name}</Text>
             <Text className="text-xl font-bold text-ink dark:text-white">{series.title}</Text>
             {series.description ? <Text className="text-sm leading-5 text-ink-600 dark:text-ink-100">{series.description}</Text> : null}
-            <Text className="text-xs text-ink-400 dark:text-ink-400">{series.episode_count ?? episodes.length} lectures</Text>
+            <Text className="text-xs text-ink-400 dark:text-ink-400">{formatCount(series.episode_count ?? episodes.length, "lecture", "lectures")}</Text>
           </View>
         }
         ListEmptyComponent={<View className="px-6"><EmptyState title="No lectures in this series" /></View>}

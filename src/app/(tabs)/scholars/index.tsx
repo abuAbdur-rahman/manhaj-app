@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { EmptyState, ErrorState } from "@/components/empty-state";
 import { useAllScholars } from "@/hooks/useManhajQueries";
+import { formatCount } from "@/lib/format";
 
 export default function ScholarsScreen() {
   const q = useAllScholars();
@@ -58,8 +59,8 @@ export default function ScholarsScreen() {
                 <Text className="text-sm font-semibold text-ink dark:text-white">{item.name}</Text>
                 <Text className="text-xs text-ink-500 dark:text-ink-400">
                   {[
-                    item.series_count !== undefined ? `${item.series_count} series` : null,
-                    item.episode_count !== undefined ? `${item.episode_count} lectures` : null,
+                    item.series_count !== undefined ? formatCount(item.series_count, "series", "series") : null,
+                    item.episode_count !== undefined ? formatCount(item.episode_count, "lecture", "lectures") : null,
                   ].filter(Boolean).join(" · ") || "Active"}
                 </Text>
                 {item.languages?.length ? (

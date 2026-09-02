@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AudioCard } from "@/components/audio-card";
 import { EmptyState, ErrorState } from "@/components/empty-state";
 import { useScholarPage } from "@/hooks/useManhajQueries";
+import { formatCount } from "@/lib/format";
 
 export default function ScholarDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -51,7 +52,7 @@ export default function ScholarDetailScreen() {
               <Text className="text-xl font-bold text-ink dark:text-white">{scholar.name}</Text>
               {scholar.bio ? <Text className="text-sm leading-5 text-ink-600 dark:text-ink-100">{scholar.bio}</Text> : null}
               <Text className="text-xs text-ink-400 dark:text-ink-400">
-                {scholar.series_count ?? 0} series · {scholar.episode_count ?? 0} lectures
+                {formatCount(scholar.series_count, "series", "series")} · {formatCount(scholar.episode_count, "lecture", "lectures")}
               </Text>
             </View>
 
@@ -70,7 +71,7 @@ export default function ScholarDetailScreen() {
                             {s.description}
                           </Text>
                         ) : null}
-                        <Text className="mt-2 text-xs font-medium text-ink-400 dark:text-ink-400">{s.episode_count ?? 0} lectures</Text>
+                        <Text className="mt-2 text-xs font-medium text-ink-400 dark:text-ink-400">{formatCount(s.episode_count, "lecture", "lectures")}</Text>
                       </Pressable>
                     </Link>
                   ))}
