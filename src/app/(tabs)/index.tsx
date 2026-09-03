@@ -1,12 +1,14 @@
 import { Link } from "expo-router";
 import { useCallback, useState } from "react";
-import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
+import { Alert, FlatList, Pressable, RefreshControl, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AudioCard, AudioCardSkeleton } from "@/components/audio-card";
 import { EmptyState, ErrorState } from "@/components/empty-state";
 import { useFeaturedSeries, useRecentEpisodes, useScholars } from "@/hooks/useManhajQueries";
 import { formatCount } from "@/lib/format";
+import { isPlayableEpisode } from "@/lib/downloads";
+import { playEpisode } from "@/lib/trackPlayer";
 import type { Episode } from "@/types";
 
 export default function HomeScreen() {
@@ -21,6 +23,16 @@ export default function HomeScreen() {
     await Promise.all([recent.refetch(), featured.refetch(), scholars.refetch()]);
     setRefreshing(false);
   }, [recent, featured, scholars]);
+
+  const playRecent = useCallback(
+    (e: Episode) => {
+      const queue = (recent.data ?? []).filter(isPlayableEpisode);
+      playEpisode(e, queue.length ? queue : [e]).catch(() => {
+        Alert.alert("Playback failed", "Something went wrong. Please try again.");
+      });
+    },
+    [recent.data],
+  );
 
   // Single virtualized list — Recent drives rows; featured + scholars in header/footer to avoid nested ScrollView
   const recentData: Episode[] = recent.data ?? [];
@@ -111,7 +123,7 @@ export default function HomeScreen() {
             )}
           </View>
         }
-        renderItem={({ item: e }) => <AudioCard episode={e} />}
+        renderItem={({ item: e }) => <AudioCard episode={e} onPlay={playRecent} />}
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
       />
     </SafeAreaView>

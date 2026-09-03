@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { Linking, Pressable, Switch, Text, View, ScrollView } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "expo-router";
+import * as Updates from "expo-updates";
 
 import { getStorageCapBytes, getStorageUsedBytes, getWifiOnly, setWifiOnly, setStorageCapBytes } from "@/lib/downloads";
 import { BottomTabInset } from "@/constants/theme";
@@ -12,6 +13,8 @@ function fmtBytes(n: number): string {
   if (n < 1_073_741_824) return `${(n / 1_048_576).toFixed(1)} MB`;
   return `${(n / 1_073_741_824).toFixed(2)} GB`;
 }
+
+const showDevHints = __DEV__ || Updates.channel === "preview";
 
 export default function SettingsScreen() {
   const [wifiOnly, setWifiOnlyState] = useState(false);
@@ -88,7 +91,9 @@ export default function SettingsScreen() {
             <Pressable onPress={() => Linking.openURL(process.env.EXPO_PUBLIC_SUPPORT_TELEGRAM_URL!)} accessibilityRole="button" hitSlop={8} style={{ minHeight: 48, justifyContent: 'center' }} className="rounded-full border border-sand-200 dark:border-ink-700 bg-white dark:bg-ink-900 px-5 py-2.5"><Text className="text-xs font-semibold text-ink dark:text-white">Telegram</Text></Pressable>
           ) : null}
         </View>
-          <Text className="text-xs text-ink-400 dark:text-ink-400">Set EXPO_PUBLIC_SUPPORT_WHATSAPP_URL / EXPO_PUBLIC_SUPPORT_TELEGRAM_URL to show contact buttons.</Text>
+          {showDevHints ? (
+            <Text className="text-xs text-ink-400 dark:text-ink-400">Set EXPO_PUBLIC_SUPPORT_WHATSAPP_URL / EXPO_PUBLIC_SUPPORT_TELEGRAM_URL to show contact buttons.</Text>
+          ) : null}
         </View>
 
         <View className="rounded-2xl border border-sand-200 dark:border-ink-800 bg-white dark:bg-ink-800 p-4 gap-3">

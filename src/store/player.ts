@@ -82,6 +82,8 @@ interface PlayerStore {
   speed: Speed;
   isLoading: boolean;
   sleepTimerRemaining: number | null;
+  sleepTimerPreset: number | null;
+  miniPlayerHidden: boolean;
   setEpisode: (episode: Episode) => void;
   setQueue: (episodes: Episode[], startIndex?: number) => void;
   setActiveIndex: (index: number) => void;
@@ -94,6 +96,8 @@ interface PlayerStore {
   setLoading: (loading: boolean) => void;
   setSleepTimer: (seconds: number | null) => void;
   tickSleepTimer: () => void;
+  hideMiniPlayer: () => void;
+  showMiniPlayer: () => void;
   clear: () => void;
   hydrate: () => void;
 }
@@ -105,6 +109,8 @@ const episodeState = (episode: Episode) => ({
   isPlaying: true,
   isLoading: true,
   sleepTimerRemaining: null as number | null,
+  sleepTimerPreset: null as number | null,
+  miniPlayerHidden: false,
 });
 
 export const usePlayerStore = create<PlayerStore>((set, get) => ({
@@ -117,6 +123,11 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   speed: 1 as Speed,
   isLoading: false,
   sleepTimerRemaining: null,
+  sleepTimerPreset: null,
+  miniPlayerHidden: false,
+
+  hideMiniPlayer: () => set({ miniPlayerHidden: true }),
+  showMiniPlayer: () => set({ miniPlayerHidden: false }),
 
   hydrate: () => {
     const p = loadPersisted();
@@ -213,12 +224,12 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     persistTimeDebounced({ currentTime: s.currentTime, speed });
   },
   setLoading: (loading) => set({ isLoading: loading }),
-  setSleepTimer: (seconds) => set({ sleepTimerRemaining: seconds }),
+  setSleepTimer: (seconds) => set({ sleepTimerRemaining: seconds, sleepTimerPreset: seconds }),
   tickSleepTimer: () => {
-     const current = get().sleepTimerRemaining;
-     if (current === null) return;
-     if (current <= 1) {
-       set({ sleepTimerRemaining: null, isPlaying: false });
+      const current = get().sleepTimerRemaining;
+      if (current === null) return;
+      if (current <= 1) {
+        set({ sleepTimerRemaining: null, sleepTimerPreset: null, isPlaying: false });
          import("@rntp/player").then((m) => (m.default ?? m).pause()).catch(() => {});
      } else set({ sleepTimerRemaining: current - 1 });
    },
@@ -239,6 +250,8 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
         speed: 1 as Speed,
         isLoading: false,
         sleepTimerRemaining: null,
+        sleepTimerPreset: null,
+        miniPlayerHidden: false,
       };
     }),
 }));

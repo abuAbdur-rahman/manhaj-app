@@ -32,6 +32,10 @@ export function isAllowedAudioHost(url: string): boolean {
   }
 }
 
+export function isPlayableEpisode(ep: Episode): boolean {
+  return !!getLocalUri(ep.id) || (!!ep.audio_url && isAllowedAudioHost(ep.audio_url));
+}
+
 function audioDir(): string {
   const base = FileSystem.documentDirectory ?? null;
   if (!base) throw new Error("No documentDirectory available");
@@ -120,15 +124,6 @@ function upsertProgress(p: DownloadProgress) {
 function clearProgress(episodeId: string) {
   activeMap.delete(episodeId);
   notifyProgress();
-}
-// kept for backwards compat — clears single entry if given, or all if null
-function setActiveDownload(p: DownloadProgress | null) {
-  if (p === null) {
-    activeMap.clear();
-    notifyProgress();
-    return;
-  }
-  upsertProgress(p);
 }
 
 export function getAllDownloads(): DownloadRow[] {
