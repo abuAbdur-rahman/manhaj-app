@@ -125,15 +125,6 @@ function clearProgress(episodeId: string) {
   activeMap.delete(episodeId);
   notifyProgress();
 }
-// kept for backwards compat — clears single entry if given, or all if null
-function setActiveDownload(p: DownloadProgress | null) {
-  if (p === null) {
-    activeMap.clear();
-    notifyProgress();
-    return;
-  }
-  upsertProgress(p);
-}
 
 export function getAllDownloads(): DownloadRow[] {
   return getDb().getAllSync<DownloadRow>(`SELECT * FROM downloads ORDER BY downloaded_at DESC`);
