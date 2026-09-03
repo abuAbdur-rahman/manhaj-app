@@ -7,6 +7,7 @@ import { AudioCard, AudioCardSkeleton } from "@/components/audio-card";
 import { EmptyState, ErrorState } from "@/components/empty-state";
 import { useFeaturedSeries, useRecentEpisodes, useScholars } from "@/hooks/useManhajQueries";
 import { formatCount } from "@/lib/format";
+import { playEpisode } from "@/lib/trackPlayer";
 import type { Episode } from "@/types";
 
 export default function HomeScreen() {
@@ -21,6 +22,10 @@ export default function HomeScreen() {
     await Promise.all([recent.refetch(), featured.refetch(), scholars.refetch()]);
     setRefreshing(false);
   }, [recent, featured, scholars]);
+
+  const playRecent = useCallback((e: Episode) => {
+    void playEpisode(e, recent.data ?? [e]);
+  }, [recent.data]);
 
   // Single virtualized list — Recent drives rows; featured + scholars in header/footer to avoid nested ScrollView
   const recentData: Episode[] = recent.data ?? [];
@@ -111,7 +116,7 @@ export default function HomeScreen() {
             )}
           </View>
         }
-        renderItem={({ item: e }) => <AudioCard episode={e} />}
+        renderItem={({ item: e }) => <AudioCard episode={e} onPlay={playRecent} />}
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
       />
     </SafeAreaView>

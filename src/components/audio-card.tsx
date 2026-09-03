@@ -1,6 +1,7 @@
 import { Link } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 import { Image } from "expo-image";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 
 import { formatDuration } from "@/lib/audio";
 import type { Episode } from "@/types";
@@ -58,6 +59,7 @@ export function AudioCard({ episode, variant = "row", number, onPlay, href }: Pr
               style={{ minHeight: 48, minWidth: 48 }}
               className="flex-1 flex-row items-center justify-center gap-1 rounded-full bg-forest-700 py-2.5 active:opacity-90"
             >
+              <MaterialCommunityIcons name="play" size={14} color="#ffffff" />
               <Text className="text-xs font-semibold text-white">Play</Text>
             </Pressable>
           ) : null}
@@ -104,7 +106,7 @@ export function AudioCard({ episode, variant = "row", number, onPlay, href }: Pr
           style={{ minHeight: 48, minWidth: 48, justifyContent: 'center' }}
           className="rounded-full bg-forest-600 px-4 py-2.5 active:opacity-80"
         >
-          <Text className="text-xs font-semibold text-white">Play</Text>
+          <MaterialCommunityIcons name="play" size={14} color="#ffffff" />
         </Pressable>
       ) : null}
     </View>

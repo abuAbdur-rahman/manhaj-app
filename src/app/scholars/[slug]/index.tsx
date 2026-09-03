@@ -4,6 +4,7 @@ import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AudioCard } from "@/components/audio-card";
+import { BackButton } from "@/components/back-button";
 import { EmptyState, ErrorState } from "@/components/empty-state";
 import { useScholarPage } from "@/hooks/useManhajQueries";
 import { formatCount } from "@/lib/format";
@@ -22,6 +23,9 @@ export default function ScholarDetailScreen() {
   if (pageQ.isPending) {
     return (
       <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink-950">
+        <View className="flex-row items-center px-2 pt-2">
+          <BackButton />
+        </View>
         <View className="h-32 bg-sand-100 dark:bg-ink-800" />
       </SafeAreaView>
     );
@@ -29,6 +33,9 @@ export default function ScholarDetailScreen() {
   if (pageQ.isError || !pageQ.data) {
     return (
       <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink-950">
+        <View className="flex-row items-center px-2 pt-2">
+          <BackButton />
+        </View>
         <ErrorState message={pageQ.isError ? "Failed to load scholar" : "Scholar not found"} onRetry={() => pageQ.refetch()} />
       </SafeAreaView>
     );
@@ -45,6 +52,11 @@ export default function ScholarDetailScreen() {
         contentContainerClassName="gap-6 pb-10"
         ListHeaderComponent={
           <View className="gap-6">
+            <View className="flex-row items-center justify-between px-4 pt-2">
+              <BackButton />
+              <Text className="text-xs font-semibold uppercase tracking-widest text-forest-600 dark:text-forest-100">Scholar</Text>
+              <View style={{ minWidth: 48 }} />
+            </View>
             <View className="gap-3 bg-white dark:bg-ink-800 px-6 py-6 border-b border-sand-200 dark:border-ink-800">
               <View className="h-16 w-16 items-center justify-center rounded-2xl bg-forest-700">
                 <Text className="text-xl font-bold text-white">{scholar.name[0]}</Text>
