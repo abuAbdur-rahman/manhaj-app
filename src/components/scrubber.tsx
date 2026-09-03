@@ -61,6 +61,7 @@ export function Scrubber({ duration, position, onSeek, disabled = false }: Scrub
 
   const effectiveValue = scrubValue ?? position;
   const pct = usable ? Math.min(100, (effectiveValue / duration) * 100) : 0;
+  const a11yStep = Math.max(10, Math.round(duration / 20));
 
   return (
     <View
@@ -69,16 +70,24 @@ export function Scrubber({ duration, position, onSeek, disabled = false }: Scrub
       accessibilityRole="adjustable"
       accessibilityLabel="Seek"
       accessibilityValue={{ min: 0, max: Math.floor(duration), now: Math.floor(effectiveValue) }}
+      accessibilityActions={usable ? [{ name: "increment" }, { name: "decrement" }] : undefined}
+      onAccessibilityAction={(e) => {
+        if (!usable) return;
+        const delta = e.nativeEvent.actionName === "increment" ? a11yStep : -a11yStep;
+        onSeek(Math.min(Math.max(position + delta, 0), duration));
+      }}
       className="h-10 w-full justify-center"
     >
       <View className="h-1.5 w-full overflow-hidden rounded-full bg-sand-200 dark:bg-ink-800">
         <View
+          pointerEvents="none"
           style={{ width: `${pct}%` }}
           className={usable ? "h-1.5 rounded-full bg-forest-600 dark:bg-forest-500" : "h-1.5 rounded-full bg-sand-300 dark:bg-ink-700"}
         />
       </View>
       {usable ? (
         <View
+          pointerEvents="none"
           style={{ left: `${pct}%` }}
           className="absolute top-1/2 h-5 w-5 -translate-x-2.5 -translate-y-2.5 rounded-full border-2 border-forest-600 bg-white dark:border-forest-500 dark:bg-ink-100"
         />

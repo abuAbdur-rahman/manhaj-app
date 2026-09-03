@@ -14,7 +14,7 @@ import { ErrorState } from "@/components/empty-state";
 import { Scrubber } from "@/components/scrubber";
 import { Colors } from "@/constants/theme";
 import { formatDuration } from "@/lib/audio";
-import { type DownloadRow, downloadEpisode, getDownload, getLocalUri, subscribeDownloads } from "@/lib/downloads";
+import { type DownloadRow, downloadEpisode, getDownload, getLocalUri, isPlayableEpisode, subscribeDownloads } from "@/lib/downloads";
 import { playEpisode, seekTo, togglePlayPause } from "@/lib/trackPlayer";
 import { useEpisodeBySlug, useSeriesWithEpisodes } from "@/hooks/useManhajQueries";
 import { usePlayerStore } from "@/store/player";
@@ -50,13 +50,14 @@ export default function LectureScreen() {
   const [dlBusy, setDlBusy] = useState(false);
   const [dlInfo, setDlInfo] = useState<DownloadRow | null>(null);
 
-  const { currentEpisode, currentTime, duration, speed, sleepTimerRemaining } = usePlayerStore(
+  const { currentEpisode, currentTime, duration, speed, sleepTimerRemaining, sleepTimerPreset } = usePlayerStore(
     useShallow((s) => ({
       currentEpisode: s.currentEpisode,
       currentTime: s.currentTime,
       duration: s.duration,
       speed: s.speed,
       sleepTimerRemaining: s.sleepTimerRemaining,
+      sleepTimerPreset: s.sleepTimerPreset,
     })),
   );
   const playing = useIsPlaying();
@@ -167,7 +168,7 @@ export default function LectureScreen() {
   };
 
   const cycleSleep = () => {
-    const idx = SLEEP_OPTIONS.indexOf(sleepTimerRemaining);
+    const idx = SLEEP_OPTIONS.indexOf(sleepTimerPreset);
     const next = SLEEP_OPTIONS[(idx + 1) % SLEEP_OPTIONS.length];
     usePlayerStore.getState().setSleepTimer(next);
   };
@@ -223,7 +224,10 @@ export default function LectureScreen() {
   };
 
   const playFromSeries = (e: Episode) => {
-    void playEpisode(e, seriesEpisodes);
+    const queue = seriesEpisodes.filter(isPlayableEpisode);
+    playEpisode(e, queue.length ? queue : [e]).catch(() => {
+      Alert.alert("Playback failed", "Something went wrong. Please try again.");
+    });
   };
 
   const artwork = ep.series?.cover_url ?? ep.scholar?.photo_url ?? null;

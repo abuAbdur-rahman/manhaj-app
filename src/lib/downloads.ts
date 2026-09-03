@@ -32,6 +32,10 @@ export function isAllowedAudioHost(url: string): boolean {
   }
 }
 
+export function isPlayableEpisode(ep: Episode): boolean {
+  return !!getLocalUri(ep.id) || (!!ep.audio_url && isAllowedAudioHost(ep.audio_url));
+}
+
 function audioDir(): string {
   const base = FileSystem.documentDirectory ?? null;
   if (!base) throw new Error("No documentDirectory available");
