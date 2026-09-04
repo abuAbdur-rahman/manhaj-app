@@ -46,42 +46,46 @@ export default function HomeScreen() {
         contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: Math.max(40, insets.bottom + 80), gap: 24 }}
         ListHeaderComponent={
           <View style={{ gap: 24 }}>
-            <View className="gap-1">
-              <Text className="text-2xl font-bold text-ink dark:text-ink-100">Manhaj Sunnah</Text>
-              <Text className="text-sm text-ink-500 dark:text-ink-400">Manhaj as-Salaf — Quran, Sunnah & Athar</Text>
+            <View className="gap-1 pt-1">
+              <Text className="text-xs font-semibold uppercase tracking-[0.18em] text-forest-600 dark:text-forest-100">Manhaj as-Salaf</Text>
+              <Text className="text-[26px] font-bold leading-9 text-ink dark:text-ink-100">Manhaj Sunnah</Text>
+              <Text className="text-sm text-ink-500 dark:text-ink-400">Quran, Sunnah & Athar — on demand.</Text>
             </View>
 
             <View className="gap-3">
-              <Text className="text-sm font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-400">Featured</Text>
+              <Text className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-400">Featured</Text>
               {featured.isPending ? (
-                <View className="h-28 rounded-2xl bg-sand-100 dark:bg-ink-800" />
+                <View className="h-44 w-[210px] rounded-2xl bg-sand-100 dark:bg-ink-800" />
               ) : featured.isError ? (
                 <ErrorState message="Failed to load featured" onRetry={() => featured.refetch()} />
               ) : !featured.data?.length ? (
                 <EmptyState title="No featured series" description="Check back soon." />
               ) : (
-                <View style={{ gap: 12 }}>
-                  {featured.data.map((s) =>
-                    s.scholar?.slug ? (
-                      <Link key={s.id} href={`/scholars/${s.scholar.slug}/series/${s.slug}` as never} asChild>
-                        <Pressable accessibilityRole="button" accessibilityLabel={`${s.title} by ${s.scholar?.name ?? "Series"}`} hitSlop={8} style={{ minHeight: 48 }} className="rounded-2xl border border-sand-200 bg-white p-4 active:opacity-80 dark:border-ink-800 dark:bg-ink-900">
-                          <Text className="text-xs font-semibold uppercase tracking-widest text-forest-600 dark:text-forest-100">{s.scholar?.name ?? "Series"}</Text>
-                          <Text className="mt-1 text-base font-bold text-ink dark:text-ink-100">{s.title}</Text>
-                          {s.description ? <Text className="mt-1 text-sm leading-5 text-ink-600 dark:text-ink-400" numberOfLines={2}>{s.description}</Text> : null}
-                          <Text className="mt-2 text-xs font-medium text-ink-400">{formatCount(s.episode_count, "lecture", "lectures")}</Text>
-                        </Pressable>
-                      </Link>
-                    ) : null,
+                <FlatList
+                  data={featured.data.filter((s) => s.scholar?.slug)}
+                  keyExtractor={(s) => s.id}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ gap: 12, paddingRight: 24 }}
+                  renderItem={({ item: s }) => (
+                    <Link key={s.id} href={`/scholars/${s.scholar?.slug}/series/${s.slug}` as never} asChild>
+                      <Pressable accessibilityRole="button" accessibilityLabel={`${s.title} by ${s.scholar?.name ?? "Series"}`} hitSlop={8} style={{ minHeight: 48 }} className="w-[220px] gap-1 rounded-2xl border border-sand-200 bg-white p-4 active:opacity-80 dark:border-ink-800 dark:bg-ink-900">
+                        <Text className="text-[10px] font-semibold uppercase tracking-widest text-forest-600 dark:text-forest-100">{s.scholar?.name ?? "Series"}</Text>
+                        <Text className="text-base font-bold leading-5 text-ink dark:text-ink-100" numberOfLines={2}>{s.title}</Text>
+                        {s.description ? <Text className="mt-1 text-xs leading-4 text-ink-500 dark:text-ink-400" numberOfLines={2}>{s.description}</Text> : null}
+                        <Text className="mt-auto pt-1 text-[11px] font-semibold text-ink-400">{formatCount(s.episode_count, "lecture", "lectures")}</Text>
+                      </Pressable>
+                    </Link>
                   )}
-                </View>
+                />
               )}
             </View>
 
             <View className="gap-3">
               <View className="flex-row items-center justify-between">
-                <Text className="text-sm font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-400">Recent</Text>
+                <Text className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-400">Recent</Text>
                 <Link href="/scholars" asChild>
-                  <Pressable accessibilityRole="button" accessibilityLabel="Browse scholars" hitSlop={8} style={{ minHeight: 48, justifyContent: "center", paddingHorizontal: 12 }} className="rounded-full bg-sand-100 dark:bg-ink-800"><Text className="text-xs font-semibold text-forest-700 dark:text-forest-100">Browse scholars</Text></Pressable>
+                  <Pressable accessibilityRole="button" accessibilityLabel="Browse scholars" hitSlop={8} style={{ minHeight: 48, justifyContent: "center", paddingHorizontal: 16 }} className="rounded-full border border-forest-600/30 active:opacity-80 dark:border-forest-500/40"><Text className="text-xs font-semibold text-forest-700 dark:text-forest-100">Browse scholars</Text></Pressable>
                 </Link>
               </View>
               {recent.isPending ? (
@@ -96,7 +100,7 @@ export default function HomeScreen() {
         }
         ListFooterComponent={
           <View className="gap-3 pt-2">
-            <Text className="text-sm font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-400">Scholars</Text>
+            <Text className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-400">Scholars</Text>
             {scholars.isPending ? (
               <View className="h-20 rounded-2xl bg-sand-100 dark:bg-ink-800" />
             ) : scholars.isError ? (

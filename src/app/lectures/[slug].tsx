@@ -267,10 +267,10 @@ export default function LectureScreen() {
             </Link>
           ) : null}
           <View className="mt-1 flex-row flex-wrap items-center justify-center gap-2">
-            <Text className="rounded bg-forest-50 px-2 py-1 text-xs font-semibold uppercase text-forest-700 dark:bg-forest-900 dark:text-forest-100">{ep.language}</Text>
+            <Text className="rounded-full bg-forest-50 px-2 py-1 text-xs font-semibold uppercase text-forest-700 dark:bg-forest-900 dark:text-forest-100">{ep.language}</Text>
             <Text className="font-mono text-xs font-medium text-ink-500 dark:text-ink-400">{formatDuration(ep.duration_seconds ?? 0)}</Text>
             {seriesIndex >= 0 ? (
-              <Text className="rounded bg-sand-100 px-2 py-1 text-xs font-medium text-ink-600 dark:bg-ink-800 dark:text-ink-400">
+              <Text className="rounded-full bg-sand-100 px-2 py-1 text-xs font-medium text-ink-600 dark:bg-ink-800 dark:text-ink-400">
                 Episode {seriesIndex + 1} of {seriesEpisodes.length}
               </Text>
             ) : null}
@@ -395,7 +395,7 @@ export default function LectureScreen() {
         {ep.tags.length > 0 ? (
           <View className="flex-row flex-wrap gap-2">
             {ep.tags.map((t) => (
-              <Text key={t} className="rounded bg-sand-100 px-2 py-1 text-xs font-medium text-ink-600 dark:bg-ink-800 dark:text-ink-400">
+              <Text key={t} className="rounded-full bg-sand-100 px-2 py-1 text-xs font-medium text-ink-600 dark:bg-ink-800 dark:text-ink-400">
                 {t}
               </Text>
             ))}

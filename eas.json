@@ -12,7 +12,11 @@
     "preview": {
       "developmentClient": false,
       "distribution": "internal",
-      "channel": "preview"
+      "channel": "preview",
+      "env": {
+        "EAS_BUILD_DISABLE_MAVEN_CACHE": "1",
+        "GRADLE_USER_HOME": "/tmp/gradle-home"
+      }
     },
     "production": {
       "distribution": "internal",

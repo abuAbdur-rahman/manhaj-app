@@ -57,19 +57,32 @@ export default function ScholarDetailScreen() {
               <Text className="text-xs font-semibold uppercase tracking-widest text-forest-600 dark:text-forest-100">Scholar</Text>
               <View style={{ minWidth: 48 }} />
             </View>
-            <View className="gap-3 bg-white dark:bg-ink-800 px-6 py-6 border-b border-sand-200 dark:border-ink-800">
-              <View className="h-16 w-16 items-center justify-center rounded-2xl bg-forest-700">
-                <Text className="text-xl font-bold text-white">{scholar.name[0]}</Text>
+            <View className="gap-4 bg-white px-6 pb-6 pt-2 dark:bg-ink-800">
+              <View className="flex-row items-center gap-4">
+                <View className="h-[76px] w-[76px] items-center justify-center rounded-full bg-forest-700">
+                  <Text className="text-2xl font-bold text-white">{scholar.name[0]}</Text>
+                </View>
+                <View className="flex-1 gap-1.5">
+                  <Text className="text-xl font-bold text-ink dark:text-white">{scholar.name}</Text>
+                  <Text className="text-xs text-ink-400 dark:text-ink-400">
+                    {formatCount(scholar.series_count, "series", "series")} · {formatCount(scholar.episode_count, "lecture", "lectures")}
+                  </Text>
+                  {scholar.languages?.length ? (
+                    <View className="flex-row flex-wrap gap-1">
+                      {scholar.languages.map((l) => (
+                        <View key={l} className="rounded-full bg-forest-50 px-2 py-0.5 dark:bg-forest-900">
+                          <Text className="text-[10px] font-semibold uppercase tracking-wide text-forest-700 dark:text-forest-100">{l}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  ) : null}
+                </View>
               </View>
-              <Text className="text-xl font-bold text-ink dark:text-white">{scholar.name}</Text>
               {scholar.bio ? <Text className="text-sm leading-5 text-ink-600 dark:text-ink-100">{scholar.bio}</Text> : null}
-              <Text className="text-xs text-ink-400 dark:text-ink-400">
-                {formatCount(scholar.series_count, "series", "series")} · {formatCount(scholar.episode_count, "lecture", "lectures")}
-              </Text>
             </View>
 
             <View className="gap-3 px-6">
-              <Text className="text-sm font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-400">Series</Text>
+              <Text className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-400">Series</Text>
               {!series.length ? (
                 <EmptyState title="No series" description="Series will appear here." />
               ) : (
@@ -92,7 +105,7 @@ export default function ScholarDetailScreen() {
             </View>
 
             <View className="px-6">
-              <Text className="text-sm font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-400">Latest lectures</Text>
+              <Text className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-400">Latest lectures</Text>
             </View>
           </View>
         }

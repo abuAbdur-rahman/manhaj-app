@@ -1,7 +1,8 @@
 import { Link } from "expo-router";
 import { useCallback, useState } from "react";
-import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
+import { FlatList, Pressable, Text, View, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 
 import { EmptyState, ErrorState } from "@/components/empty-state";
 import { useAllScholars } from "@/hooks/useManhajQueries";
@@ -52,10 +53,10 @@ export default function ScholarsScreen() {
         renderItem={({ item }) => (
           <Link href={`/scholars/${item.slug}` as never} asChild>
             <Pressable accessibilityRole="button" hitSlop={8} style={{ minHeight: 48 }} className="flex-row items-center gap-4 rounded-2xl border border-sand-200 dark:border-ink-700 bg-white dark:bg-ink-800 p-4 active:opacity-80">
-              <View className="h-12 w-12 items-center justify-center rounded-full bg-forest-700">
-                <Text className="text-base font-bold text-white">{item.name[0]}</Text>
+              <View className="h-14 w-14 items-center justify-center rounded-full bg-forest-700">
+                <Text className="text-lg font-bold text-white">{item.name[0]}</Text>
               </View>
-              <View className="flex-1">
+              <View className="flex-1 gap-1">
                 <Text className="text-sm font-semibold text-ink dark:text-white">{item.name}</Text>
                 <Text className="text-xs text-ink-500 dark:text-ink-400">
                   {[
@@ -64,16 +65,25 @@ export default function ScholarsScreen() {
                   ].filter(Boolean).join(" · ") || "Active"}
                 </Text>
                 {item.languages?.length ? (
-                  <Text className="mt-0.5 text-xs font-medium uppercase text-forest-600 dark:text-forest-100">
-                    {item.languages.join(" · ")}
-                  </Text>
+                  <View className="flex-row flex-wrap gap-1">
+                    {item.languages.map((l) => (
+                      <View key={l} className="rounded-full bg-forest-50 px-2 py-0.5 dark:bg-forest-900">
+                        <Text className="text-[10px] font-semibold uppercase tracking-wide text-forest-700 dark:text-forest-100">{l}</Text>
+                      </View>
+                    ))}
+                  </View>
                 ) : null}
               </View>
-              <Text className="text-ink-400 dark:text-ink-400">›</Text>
+              <MaterialCommunityIcons name="chevron-right" size={22} color="#8da294" />
             </Pressable>
           </Link>
         )}
-        ListHeaderComponent={<Text className="mb-1 text-sm font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-400">Scholars</Text>}
+        ListHeaderComponent={
+          <View className="mb-1 gap-1 pt-1">
+            <Text className="text-xs font-semibold uppercase tracking-[0.18em] text-forest-600 dark:text-forest-100">Listen & learn</Text>
+            <Text className="text-xl font-bold text-ink dark:text-ink-100">Scholars</Text>
+          </View>
+        }
       />
     </SafeAreaView>
   );

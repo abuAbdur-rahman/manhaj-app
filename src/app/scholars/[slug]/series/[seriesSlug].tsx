@@ -59,12 +59,12 @@ export default function SeriesDetailScreen() {
               <Text className="text-xs font-semibold uppercase tracking-widest text-forest-600 dark:text-forest-100">Series</Text>
               <View style={{ minWidth: 48 }} />
             </View>
-            <View className="gap-2 bg-white dark:bg-ink-800 px-6 py-6 border-b border-sand-200 dark:border-ink-800">
-            <Text className="text-xs font-semibold uppercase tracking-widest text-forest-600 dark:text-forest-100">{series.scholar?.name}</Text>
-            <Text className="text-xl font-bold text-ink dark:text-white">{series.title}</Text>
-            {series.description ? <Text className="text-sm leading-5 text-ink-600 dark:text-ink-100">{series.description}</Text> : null}
-            <Text className="text-xs text-ink-400 dark:text-ink-400">{formatCount(series.episode_count ?? episodes.length, "lecture", "lectures")}</Text>
-          </View>
+            <View className="gap-2 bg-white px-6 py-6 dark:bg-ink-800">
+              <Text className="text-xs font-semibold uppercase tracking-widest text-forest-600 dark:text-forest-100">{series.scholar?.name}</Text>
+              <Text className="text-xl font-bold text-ink dark:text-white">{series.title}</Text>
+              {series.description ? <Text className="text-sm leading-5 text-ink-600 dark:text-ink-100">{series.description}</Text> : null}
+              <Text className="text-xs text-ink-400 dark:text-ink-400">{formatCount(series.episode_count ?? episodes.length, "lecture", "lectures")}</Text>
+            </View>
           </View>
         }
         ListEmptyComponent={<View className="px-6"><EmptyState title="No lectures in this series" /></View>}

@@ -58,6 +58,7 @@ export function useScholarPage(slug: string) {
   });
 }
 
+
 export function useScholarSeries(scholarId: string) {
   return useQuery({
     queryKey: ["scholar-series", scholarId],

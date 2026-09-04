@@ -16,10 +16,13 @@ import { AnimatedSplashOverlay } from "@/components/animated-icon";
 import { DownloadProgressChip } from "@/components/download-progress-chip";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { MiniPlayer } from "@/components/mini-player";
+import { OfflineGate } from "@/components/offline-gate";
+import { ToastHost } from "@/components/toast-host";
 import { useLoadFonts } from "@/hooks/useLoadFonts";
 import { createNativePersister } from "@/lib/query-persister";
 import { queryClient } from "@/lib/queryClient";
 import { registerBackgroundPlayback } from "@/service/PlaybackService";
+import { useNetworkStore } from "@/store/network";
 import { usePlayerStore } from "@/store/player";
 import { useThemeStore } from "@/store/theme";
 import { BottomTabInset } from "@/constants/theme";
@@ -62,8 +65,12 @@ export default function RootLayout() {
       } catch {}
     })();
     const sub = AppState.addEventListener("change", (s) => focusManager.setFocused(s === "active"));
-    // wire onlineManager to NetInfo for offlineFirst reconnect
-    const unsubNet = NetInfo.addEventListener((s) => onlineManager.setOnline(s.isInternetReachable ?? s.isConnected ?? false));
+    // wire onlineManager + network store to NetInfo for offlineFirst reconnect + offline gating
+    const unsubNet = NetInfo.addEventListener((s) => {
+      const online = s.isInternetReachable ?? s.isConnected ?? false;
+      onlineManager.setOnline(online);
+      useNetworkStore.getState().setOnline(online);
+    });
     return () => { sub.remove(); try { (unsubNet as unknown as () => void)(); } catch {} };
   }, []);
   // gate splash on fonts
@@ -86,6 +93,8 @@ export default function RootLayout() {
           >
             <AnimatedSplashOverlay />
             <Stack screenOptions={{ headerShown: false }} />
+            <OfflineGate />
+            <ToastHost />
             <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
               <View
                 pointerEvents="box-none"

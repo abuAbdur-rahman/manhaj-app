@@ -16,6 +16,7 @@ function fmtBytes(n: number): string {
 
 const showDevHints = __DEV__ || Updates.channel === "preview";
 
+
 export default function SettingsScreen() {
   const [wifiOnly, setWifiOnlyState] = useState(false);
   const [cap, setCap] = useState(2 * 1024 ** 3);
@@ -34,9 +35,10 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink-950">
       <ScrollView contentContainerStyle={{ padding: 24, gap: 16, paddingBottom: Math.max(40, insets.bottom + BottomTabInset + 24) }}>
-        <View className="gap-1">
+        <View className="gap-1 pt-1">
+          <Text className="text-xs font-semibold uppercase tracking-[0.18em] text-forest-600 dark:text-forest-100">Manhaj Sunnah</Text>
           <Text className="text-xl font-bold text-ink dark:text-white">Settings</Text>
-          <Text className="text-sm text-ink-500 dark:text-ink-400">Manhaj Sunnah · com.manhaj.app · storage + playback</Text>
+          <Text className="text-sm text-ink-500 dark:text-ink-400">Storage, downloads & playback</Text>
         </View>
 
         <View className="rounded-2xl border border-sand-200 dark:border-ink-800 bg-white dark:bg-ink-800 p-4 gap-3">

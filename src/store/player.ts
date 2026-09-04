@@ -182,6 +182,8 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     });
   },
 
+
+
   playNext: () => {
     const { queue, queueIndex } = get();
     if (queueIndex < 0 || queueIndex >= queue.length - 1) {
