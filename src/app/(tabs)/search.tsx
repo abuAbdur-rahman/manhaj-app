@@ -22,15 +22,18 @@ export default function SearchScreen() {
   return (
     <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink-950">
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-      <View className="gap-3 px-6 py-4 border-b border-sand-200 bg-white dark:border-ink-800 dark:bg-ink-900">
-        <Text className="text-sm font-semibold uppercase tracking-wide text-ink-400">Search</Text>
+      <View className="gap-3 border-b border-sand-200 bg-white px-6 pb-5 pt-3 dark:border-ink-800 dark:bg-ink-900">
+        <View className="gap-1">
+          <Text className="text-xs font-semibold uppercase tracking-[0.18em] text-forest-600 dark:text-forest-100">Find a lecture</Text>
+          <Text className="text-xl font-bold text-ink dark:text-ink-100">Search</Text>
+        </View>
         <View className="flex-row items-center gap-2">
           <TextInput
             value={q}
             onChangeText={setQ}
             placeholder="Search lectures, scholars, tags…"
             placeholderTextColor="#9aa5a0"
-            className="flex-1 rounded-xl border border-sand-200 bg-sand-50 px-4 py-3 text-sm text-ink dark:border-ink-700 dark:bg-ink-800 dark:text-ink-100"
+            className="flex-1 rounded-full border border-sand-300 bg-sand-50 px-4 py-3 text-sm text-ink dark:border-ink-700 dark:bg-ink-800 dark:text-ink-100"
             returnKeyType="search"
             accessibilityLabel="Search lectures"
             accessibilityHint="Type to search lectures, scholars or tags"
@@ -58,7 +61,7 @@ export default function SearchScreen() {
               style={{ minHeight: 48, minWidth: 48, justifyContent: 'center' }}
               className={`rounded-full px-4 py-2.5 ${lang === o.value ? "bg-forest-700" : "bg-sand-100 dark:bg-ink-800"}`}
             >
-              <Text className={`text-xs font-semibold ${lang === o.value ? "text-white" : "text-ink-600 dark:text-ink-400"}`}>{o.label}</Text>
+              <Text className={`text-xs font-semibold uppercase tracking-wide ${lang === o.value ? "text-white" : "text-ink-600 dark:text-ink-400"}`}>{o.label}</Text>
             </Pressable>
           ))}
         </View>

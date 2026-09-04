@@ -46,24 +46,20 @@ export function AudioCard({ episode, variant = "row", number, onPlay, href }: Pr
         </Link>
         <View className="mt-1 flex-row flex-wrap gap-1">
           {episode.tags.slice(0, 2).map((t) => (
-            <Text key={t} className="rounded bg-white px-1.5 py-0.5 text-xs font-medium text-ink-600 dark:bg-ink-800 dark:text-ink-400">{t}</Text>
+            <Text key={t} className="rounded-full bg-white px-2 py-0.5 text-xs font-medium text-ink-600 dark:bg-ink-800 dark:text-ink-400">{t}</Text>
           ))}
         </View>
-        <View className="mt-3 flex-row gap-2">
-          {onPlay ? (
-            <Pressable
-              onPress={() => onPlay(episode)}
-              accessibilityRole="button"
-              accessibilityLabel={`Play ${title}`}
-              hitSlop={8}
-              style={{ minHeight: 48, minWidth: 48 }}
-              className="flex-1 flex-row items-center justify-center gap-1 rounded-full bg-forest-700 py-2.5 active:opacity-90"
-            >
-              <MaterialCommunityIcons name="play" size={14} color="#ffffff" />
-              <Text className="text-xs font-semibold text-white">Play</Text>
-            </Pressable>
-          ) : null}
-        </View>
+        {onPlay ? (
+          <Pressable
+            onPress={() => onPlay(episode)}
+            accessibilityRole="button"
+            accessibilityLabel={`Play ${title}`}
+            hitSlop={8}
+            className="mt-3 h-11 w-11 items-center justify-center self-end rounded-full bg-forest-600 active:opacity-80"
+          >
+            <MaterialCommunityIcons name="play" size={20} color="#ffffff" />
+          </Pressable>
+        ) : null}
       </View>
     );
   }
@@ -84,11 +80,11 @@ export function AudioCard({ episode, variant = "row", number, onPlay, href }: Pr
             </Text>
             {scholarName ? <Text className="text-xs font-medium text-ink-500 dark:text-ink-400" numberOfLines={1}>{scholarName}</Text> : null}
             <View className="mt-1 flex-row flex-wrap gap-1">
-              <Text className="rounded bg-sand-100 px-2 py-0.5 text-xs font-semibold uppercase text-ink-500 dark:bg-ink-800 dark:text-ink-400">
+              <Text className="rounded-full bg-sand-100 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-ink-500 dark:bg-ink-800 dark:text-ink-400">
                 {episode.language.slice(0, 3)}
               </Text>
               {episode.tags.slice(0, 1).map((t) => (
-                <Text key={t} className="rounded bg-sand-100 px-2 py-0.5 text-xs font-medium text-ink-600 dark:bg-ink-800 dark:text-ink-400">
+                <Text key={t} className="rounded-full bg-sand-100 px-2 py-0.5 text-xs font-medium uppercase tracking-wide text-ink-600 dark:bg-ink-800 dark:text-ink-400">
                   {t}
                 </Text>
               ))}
@@ -103,10 +99,9 @@ export function AudioCard({ episode, variant = "row", number, onPlay, href }: Pr
           accessibilityRole="button"
           accessibilityLabel={`Play ${title}`}
           hitSlop={8}
-          style={{ minHeight: 48, minWidth: 48, justifyContent: 'center' }}
-          className="rounded-full bg-forest-600 px-4 py-2.5 active:opacity-80"
+          className="h-11 w-11 items-center justify-center self-center rounded-full bg-forest-600 active:opacity-80"
         >
-          <MaterialCommunityIcons name="play" size={14} color="#ffffff" />
+          <MaterialCommunityIcons name="play" size={20} color="#ffffff" />
         </Pressable>
       ) : null}
     </View>

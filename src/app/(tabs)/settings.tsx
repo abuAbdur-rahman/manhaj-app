@@ -34,9 +34,10 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink-950">
       <ScrollView contentContainerStyle={{ padding: 24, gap: 16, paddingBottom: Math.max(40, insets.bottom + BottomTabInset + 24) }}>
-        <View className="gap-1">
+        <View className="gap-1 pt-1">
+          <Text className="text-xs font-semibold uppercase tracking-[0.18em] text-forest-600 dark:text-forest-100">Manhaj Sunnah</Text>
           <Text className="text-xl font-bold text-ink dark:text-white">Settings</Text>
-          <Text className="text-sm text-ink-500 dark:text-ink-400">Manhaj Sunnah · com.manhaj.app · storage + playback</Text>
+          <Text className="text-sm text-ink-500 dark:text-ink-400">Storage, downloads & playback</Text>
         </View>
 
         <View className="rounded-2xl border border-sand-200 dark:border-ink-800 bg-white dark:bg-ink-800 p-4 gap-3">
@@ -98,7 +99,7 @@ export default function SettingsScreen() {
 
         <View className="rounded-2xl border border-sand-200 dark:border-ink-800 bg-white dark:bg-ink-800 p-4 gap-3">
           <Text className="text-sm font-semibold text-ink dark:text-white">About</Text>
-          <Text className="text-sm leading-5 text-ink-600 dark:text-ink-100">Ilm, organized — Nigerian Sunni/Salafi lectures. Offline files stay until you delete them. Background playback via track-player foreground service.</Text>
+          <Text className="text-sm leading-5 text-ink-600 dark:text-ink-100">Ilm, organized – Nigerian Sunni/Salafi lectures. Offline files stay until you delete them. Background playback via track-player foreground service.</Text>
           <View className="flex-row flex-wrap gap-2 pt-2">
             <Pressable onPress={() => Linking.openURL("https://manhaj-sunnah.vercel.app/privacy")} accessibilityRole="button" hitSlop={8} style={{ minHeight: 48, justifyContent: 'center' }} className="rounded-full border border-sand-200 dark:border-ink-700 bg-sand-50 dark:bg-ink-900 px-5 py-2.5"><Text className="text-xs font-semibold text-ink dark:text-white">Privacy</Text></Pressable>
             <Pressable onPress={() => Linking.openURL("https://manhaj-sunnah.vercel.app/download")} accessibilityRole="button" hitSlop={8} style={{ minHeight: 48, justifyContent: 'center' }} className="rounded-full border border-sand-200 dark:border-ink-700 bg-sand-50 dark:bg-ink-900 px-5 py-2.5"><Text className="text-xs font-semibold text-ink dark:text-white">Download page</Text></Pressable>
