@@ -55,9 +55,9 @@ export function AudioCard({ episode, variant = "row", number, onPlay, href }: Pr
             accessibilityRole="button"
             accessibilityLabel={`Play ${title}`}
             hitSlop={8}
-            className="mt-3 h-10 w-10 items-center justify-center self-end rounded-full bg-forest-600 active:opacity-80"
+            className="mt-3 h-11 w-11 items-center justify-center self-end rounded-full bg-forest-600 active:opacity-80"
           >
-            <MaterialCommunityIcons name="play" size={18} color="#ffffff" />
+            <MaterialCommunityIcons name="play" size={20} color="#ffffff" />
           </Pressable>
         ) : null}
       </View>
@@ -80,11 +80,11 @@ export function AudioCard({ episode, variant = "row", number, onPlay, href }: Pr
             </Text>
             {scholarName ? <Text className="text-xs font-medium text-ink-500 dark:text-ink-400" numberOfLines={1}>{scholarName}</Text> : null}
             <View className="mt-1 flex-row flex-wrap gap-1">
-              <Text className="rounded-full bg-sand-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ink-500 dark:bg-ink-800 dark:text-ink-400">
+              <Text className="rounded-full bg-sand-100 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-ink-500 dark:bg-ink-800 dark:text-ink-400">
                 {episode.language.slice(0, 3)}
               </Text>
               {episode.tags.slice(0, 1).map((t) => (
-                <Text key={t} className="rounded-full bg-sand-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-ink-600 dark:bg-ink-800 dark:text-ink-400">
+                <Text key={t} className="rounded-full bg-sand-100 px-2 py-0.5 text-xs font-medium uppercase tracking-wide text-ink-600 dark:bg-ink-800 dark:text-ink-400">
                   {t}
                 </Text>
               ))}
@@ -99,9 +99,9 @@ export function AudioCard({ episode, variant = "row", number, onPlay, href }: Pr
           accessibilityRole="button"
           accessibilityLabel={`Play ${title}`}
           hitSlop={8}
-          className="h-10 w-10 items-center justify-center self-center rounded-full bg-forest-600 active:opacity-80"
+          className="h-11 w-11 items-center justify-center self-center rounded-full bg-forest-600 active:opacity-80"
         >
-          <MaterialCommunityIcons name="play" size={18} color="#ffffff" />
+          <MaterialCommunityIcons name="play" size={20} color="#ffffff" />
         </Pressable>
       ) : null}
     </View>

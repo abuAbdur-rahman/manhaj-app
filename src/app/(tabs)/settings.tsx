@@ -16,7 +16,6 @@ function fmtBytes(n: number): string {
 
 const showDevHints = __DEV__ || Updates.channel === "preview";
 
-
 export default function SettingsScreen() {
   const [wifiOnly, setWifiOnlyState] = useState(false);
   const [cap, setCap] = useState(2 * 1024 ** 3);
@@ -100,7 +99,7 @@ export default function SettingsScreen() {
 
         <View className="rounded-2xl border border-sand-200 dark:border-ink-800 bg-white dark:bg-ink-800 p-4 gap-3">
           <Text className="text-sm font-semibold text-ink dark:text-white">About</Text>
-          <Text className="text-sm leading-5 text-ink-600 dark:text-ink-100">Ilm, organized — Nigerian Sunni/Salafi lectures. Offline files stay until you delete them. Background playback via track-player foreground service.</Text>
+          <Text className="text-sm leading-5 text-ink-600 dark:text-ink-100">Ilm, organized – Nigerian Sunni/Salafi lectures. Offline files stay until you delete them. Background playback via track-player foreground service.</Text>
           <View className="flex-row flex-wrap gap-2 pt-2">
             <Pressable onPress={() => Linking.openURL("https://manhaj-sunnah.vercel.app/privacy")} accessibilityRole="button" hitSlop={8} style={{ minHeight: 48, justifyContent: 'center' }} className="rounded-full border border-sand-200 dark:border-ink-700 bg-sand-50 dark:bg-ink-900 px-5 py-2.5"><Text className="text-xs font-semibold text-ink dark:text-white">Privacy</Text></Pressable>
             <Pressable onPress={() => Linking.openURL("https://manhaj-sunnah.vercel.app/download")} accessibilityRole="button" hitSlop={8} style={{ minHeight: 48, justifyContent: 'center' }} className="rounded-full border border-sand-200 dark:border-ink-700 bg-sand-50 dark:bg-ink-900 px-5 py-2.5"><Text className="text-xs font-semibold text-ink dark:text-white">Download page</Text></Pressable>

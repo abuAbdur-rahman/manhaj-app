@@ -20,7 +20,7 @@ import {
 import { playEpisode, togglePlayPause } from "@/lib/trackPlayer";
 import { useNetworkStore } from "@/store/network";
 import { usePlayerStore } from "@/store/player";
-import type { Episode, Language, Tag } from "@/types";
+import type { Episode } from "@/types";
 
 function fmtBytes(n: number): string {
   if (n < 1024) return `${n} B`;
@@ -30,11 +30,9 @@ function fmtBytes(n: number): string {
 }
 
 function fmtDate(iso: string): string {
-  try {
-    return new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short" });
-  } catch {
-    return "";
-  }
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString(undefined, { day: "numeric", month: "short" });
 }
 
 // A DownloadRow is the only Episode metadata we are guaranteed to have offline.
@@ -50,8 +48,8 @@ function rowToEpisode(r: DownloadRow): Episode {
     description: null,
     audio_url: null,
     duration_seconds: null,
-    language: "english" as Language,
-    tags: [] as Tag[],
+    language: "english",
+    tags: [],
     recorded_date: null,
     play_count: 0,
     is_published: true,
@@ -63,7 +61,7 @@ function rowToEpisode(r: DownloadRow): Episode {
       slug: "",
       bio: null,
       photo_url: null,
-      languages: [] as Language[],
+      languages: [],
       social_links: {},
       is_active: true,
       created_at: ts,
@@ -136,7 +134,7 @@ export default function DownloadsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-sand-50 dark:bg-ink-950">
       <View className="gap-1 border-b border-sand-200 bg-white px-6 py-5 dark:border-ink-800 dark:bg-ink-900">
-        <Text className="text-[11px] font-bold uppercase tracking-[0.18em] text-forest-600 dark:text-forest-100">Offline</Text>
+        <Text className="text-xs font-bold uppercase tracking-[0.18em] text-forest-600 dark:text-forest-100">Offline</Text>
         <Text className="text-xl font-bold text-ink dark:text-white">Downloads</Text>
         <Text className="text-xs text-ink-500 dark:text-ink-400">
           {fmtBytes(used)} <Text className="text-ink-400 dark:text-ink-500">/ {fmtBytes(cap)} used</Text>
@@ -144,7 +142,7 @@ export default function DownloadsScreen() {
         {!isOnline ? (
           <View className="mt-2 flex-row items-center gap-1.5 rounded-lg bg-sand-100 px-2.5 py-1.5 dark:bg-ink-800" accessibilityRole="text">
             <MaterialCommunityIcons name="wifi-off" size={13} color={c.clay} />
-            <Text className="text-xs font-medium text-ink-600 dark:text-ink-300">You&apos;re offline — saved lectures play here.</Text>
+            <Text className="text-xs font-medium text-ink-600 dark:text-ink-300">You&apos;re offline – saved lectures play here.</Text>
           </View>
         ) : null}
         <View className="mt-3 flex-row flex-wrap gap-2">
@@ -195,18 +193,18 @@ export default function DownloadsScreen() {
                 </View>
                 <View className="flex-row items-center justify-between gap-3 border-t border-sand-100 pt-2.5 dark:border-ink-800">
                   <View className="flex-row flex-wrap items-center gap-x-3 gap-y-0.5" accessibilityLabel={`${fmtBytes(item.file_size_bytes)}, saved ${fmtDate(item.downloaded_at)}`}>
-                    <Text className="text-[11px] font-medium text-ink-400 dark:text-ink-500">{fmtBytes(item.file_size_bytes)}</Text>
-                    <Text className="text-[11px] font-medium text-ink-400 dark:text-ink-500">saved {fmtDate(item.downloaded_at)}</Text>
+                    <Text className="text-xs font-medium text-ink-400 dark:text-ink-500">{fmtBytes(item.file_size_bytes)}</Text>
+                    <Text className="text-xs font-medium text-ink-400 dark:text-ink-500">saved {fmtDate(item.downloaded_at)}</Text>
                   </View>
                   <Pressable
                     onPress={() => handleRemove(item.episode_id)}
                     accessibilityRole="button"
                     accessibilityLabel={`Remove ${item.title}`}
                     hitSlop={8}
-                    style={{ minHeight: 32, minWidth: 32, justifyContent: "center" }}
-                    className="h-8 w-8 items-center justify-center rounded-full bg-red-50 active:opacity-70 dark:bg-red-950"
+                    style={{ minHeight: 44, minWidth: 44, justifyContent: "center" }}
+                    className="h-11 w-11 items-center justify-center rounded-full bg-red-50 active:opacity-70 dark:bg-red-950"
                   >
-                    <MaterialCommunityIcons name="trash-can-outline" size={15} color={scheme === "dark" ? "#fca5a5" : "#b91c1c"} />
+                    <MaterialCommunityIcons name="trash-can-outline" size={17} color={scheme === "dark" ? "#fca5a5" : "#b91c1c"} />
                   </Pressable>
                 </View>
               </Pressable>

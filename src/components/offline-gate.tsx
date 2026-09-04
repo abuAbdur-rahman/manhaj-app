@@ -1,35 +1,32 @@
-import { usePathname, useRouter } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { usePathname } from "expo-router";
 
 import { useNetworkStore } from "@/store/network";
 import { useToastStore } from "@/store/toast";
 
-// Routes that are usable with no internet connection: Downloads (plays saved
-// files) and Settings (all local). Everything else streams/lists remote content.
-const OFFLINE_SAFE = new Set(["/downloads", "/settings"]);
-
-function requiresOnline(pathname: string): boolean {
-  if (!pathname) return false;
-  return !OFFLINE_SAFE.has(pathname);
-}
-
 /**
- * YouTube-style offline guard. When the app has no internet and the user lands
- * on (or tries to open) any route that needs a connection — Home, Scholars,
- * Search, a lecture or series page — show an "offline" toast and drop them back
- * on the Downloads tab where saved lectures still play.
+ * Offline notice. The app is cached-first (React Query persisted to SQLite,
+ * downloaded lectures play locally), so going offline never redirects –
+ * screens keep rendering from cache. This fires one warning toast per offline
+ * period when the user lands on a screen that streams remote content.
  */
 export function OfflineGate() {
   const pathname = usePathname();
-  const router = useRouter();
   const isOnline = useNetworkStore((s) => s.isOnline);
+  const offlineToastShownRef = useRef(false);
 
   useEffect(() => {
-    if (isOnline) return;
-    if (!requiresOnline(pathname)) return;
-    useToastStore.getState().show("You're offline — saved lectures are in Downloads.", "warning");
-    router.replace("/downloads");
-  }, [isOnline, pathname, router]);
+    if (isOnline) {
+      offlineToastShownRef.current = false;
+      return;
+    }
+    // One toast per offline period, not one per navigation.
+    if (offlineToastShownRef.current) return;
+    offlineToastShownRef.current = true;
+    useToastStore
+      .getState()
+      .show("You're offline – some content may be unavailable. Saved lectures are in Downloads.", "warning");
+  }, [isOnline, pathname]);
 
   return null;
 }

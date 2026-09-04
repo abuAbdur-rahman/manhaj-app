@@ -34,7 +34,7 @@ export default function HomeScreen() {
     [recent.data],
   );
 
-  // Single virtualized list — Recent drives rows; featured + scholars in header/footer to avoid nested ScrollView
+  // Single virtualized list – Recent drives rows; featured + scholars in header/footer to avoid nested ScrollView
   const recentData: Episode[] = recent.data ?? [];
 
   return (
@@ -49,7 +49,7 @@ export default function HomeScreen() {
             <View className="gap-1 pt-1">
               <Text className="text-xs font-semibold uppercase tracking-[0.18em] text-forest-600 dark:text-forest-100">Manhaj as-Salaf</Text>
               <Text className="text-[26px] font-bold leading-9 text-ink dark:text-ink-100">Manhaj Sunnah</Text>
-              <Text className="text-sm text-ink-500 dark:text-ink-400">Quran, Sunnah & Athar — on demand.</Text>
+              <Text className="text-sm text-ink-500 dark:text-ink-400">Quran, Sunnah & Athar – on demand.</Text>
             </View>
 
             <View className="gap-3">
@@ -68,12 +68,12 @@ export default function HomeScreen() {
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={{ gap: 12, paddingRight: 24 }}
                   renderItem={({ item: s }) => (
-                    <Link key={s.id} href={`/scholars/${s.scholar?.slug}/series/${s.slug}` as never} asChild>
+                    <Link href={`/scholars/${s.scholar?.slug}/series/${s.slug}` as never} asChild>
                       <Pressable accessibilityRole="button" accessibilityLabel={`${s.title} by ${s.scholar?.name ?? "Series"}`} hitSlop={8} style={{ minHeight: 48 }} className="w-[220px] gap-1 rounded-2xl border border-sand-200 bg-white p-4 active:opacity-80 dark:border-ink-800 dark:bg-ink-900">
-                        <Text className="text-[10px] font-semibold uppercase tracking-widest text-forest-600 dark:text-forest-100">{s.scholar?.name ?? "Series"}</Text>
+                        <Text className="text-xs font-semibold uppercase tracking-widest text-forest-600 dark:text-forest-100">{s.scholar?.name ?? "Series"}</Text>
                         <Text className="text-base font-bold leading-5 text-ink dark:text-ink-100" numberOfLines={2}>{s.title}</Text>
                         {s.description ? <Text className="mt-1 text-xs leading-4 text-ink-500 dark:text-ink-400" numberOfLines={2}>{s.description}</Text> : null}
-                        <Text className="mt-auto pt-1 text-[11px] font-semibold text-ink-400">{formatCount(s.episode_count, "lecture", "lectures")}</Text>
+                        <Text className="mt-auto pt-1 text-xs font-semibold text-ink-400">{formatCount(s.episode_count, "lecture", "lectures")}</Text>
                       </Pressable>
                     </Link>
                   )}

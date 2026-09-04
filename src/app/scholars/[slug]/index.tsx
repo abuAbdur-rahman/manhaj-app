@@ -71,7 +71,7 @@ export default function ScholarDetailScreen() {
                     <View className="flex-row flex-wrap gap-1">
                       {scholar.languages.map((l) => (
                         <View key={l} className="rounded-full bg-forest-50 px-2 py-0.5 dark:bg-forest-900">
-                          <Text className="text-[10px] font-semibold uppercase tracking-wide text-forest-700 dark:text-forest-100">{l}</Text>
+                          <Text className="text-xs font-semibold uppercase tracking-wide text-forest-700 dark:text-forest-100">{l}</Text>
                         </View>
                       ))}
                     </View>

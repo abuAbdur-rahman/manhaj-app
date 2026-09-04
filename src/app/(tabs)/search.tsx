@@ -61,7 +61,7 @@ export default function SearchScreen() {
               style={{ minHeight: 48, minWidth: 48, justifyContent: 'center' }}
               className={`rounded-full px-4 py-2.5 ${lang === o.value ? "bg-forest-700" : "bg-sand-100 dark:bg-ink-800"}`}
             >
-              <Text className={`text-[11px] font-semibold uppercase tracking-wide ${lang === o.value ? "text-white" : "text-ink-600 dark:text-ink-400"}`}>{o.label}</Text>
+              <Text className={`text-xs font-semibold uppercase tracking-wide ${lang === o.value ? "text-white" : "text-ink-600 dark:text-ink-400"}`}>{o.label}</Text>
             </Pressable>
           ))}
         </View>

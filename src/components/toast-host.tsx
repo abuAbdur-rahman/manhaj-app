@@ -5,7 +5,7 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 
 import { useToastStore, type ToastMessage } from "@/store/toast";
 
-function ToastItem({ message, kind }: { message: string; kind: ToastMessage["kind"] }) {
+function ToastItem({ message, kind, onDismiss }: { message: string; kind: ToastMessage["kind"]; onDismiss: () => void }) {
   const [opacity] = useState(() => new Animated.Value(0));
   const [translateY] = useState(() => new Animated.Value(-6));
 
@@ -23,6 +23,7 @@ function ToastItem({ message, kind }: { message: string; kind: ToastMessage["kin
       className={`flex-row items-center gap-2 rounded-full px-4 py-2.5 shadow-lg ${warning ? "bg-clay-600 dark:bg-clay-400" : "bg-ink-800 dark:bg-ink-100"}`}
       accessibilityRole="alert"
       accessibilityLiveRegion="assertive"
+      onTouchEnd={onDismiss}
     >
       <MaterialCommunityIcons name={warning ? "wifi-off" : "information-outline"} size={16} color={warning ? "#ffffff" : "#fafaf7"} />
       <Text className={`text-xs font-semibold ${warning ? "text-white" : "text-sand-50 dark:text-ink-950"}`} numberOfLines={2}>
@@ -44,7 +45,7 @@ export function ToastHost() {
     >
       <View pointerEvents="box-none" style={{ gap: 6, alignItems: "center" }}>
         {toasts.map((t) => (
-          <ToastItem key={t.id} message={t.message} kind={t.kind} />
+          <ToastItem key={t.id} message={t.message} kind={t.kind} onDismiss={() => useToastStore.getState().dismiss(t.id)} />
         ))}
       </View>
     </View>
