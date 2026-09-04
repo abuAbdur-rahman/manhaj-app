@@ -58,7 +58,7 @@ export default function HomeScreen() {
                 <View className="h-44 w-[210px] rounded-2xl bg-sand-100 dark:bg-ink-800" />
               ) : featured.isError ? (
                 <ErrorState message="Failed to load featured" onRetry={() => featured.refetch()} />
-              ) : !featured.data?.length ? (
+              ) : !featured.data?.filter((s) => s.scholar?.slug).length ? (
                 <EmptyState title="No featured series" description="Check back soon." />
               ) : (
                 <FlatList

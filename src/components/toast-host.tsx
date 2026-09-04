@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Animated, StyleSheet, Text, View } from "react-native";
+import { Animated, StyleSheet, Text, useColorScheme, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 
@@ -8,6 +8,7 @@ import { useToastStore, type ToastMessage } from "@/store/toast";
 function ToastItem({ message, kind, onDismiss }: { message: string; kind: ToastMessage["kind"]; onDismiss: () => void }) {
   const [opacity] = useState(() => new Animated.Value(0));
   const [translateY] = useState(() => new Animated.Value(-6));
+  const scheme = useColorScheme();
 
   useEffect(() => {
     Animated.parallel([
@@ -25,7 +26,7 @@ function ToastItem({ message, kind, onDismiss }: { message: string; kind: ToastM
       accessibilityLiveRegion="assertive"
       onTouchEnd={onDismiss}
     >
-      <MaterialCommunityIcons name={warning ? "wifi-off" : "information-outline"} size={16} color={warning ? "#ffffff" : "#fafaf7"} />
+      <MaterialCommunityIcons name={warning ? "wifi-off" : "information-outline"} size={16} color={warning ? "#ffffff" : scheme === "dark" ? "#0e1210" : "#fafaf7"} />
       <Text className={`text-xs font-semibold ${warning ? "text-white" : "text-sand-50 dark:text-ink-950"}`} numberOfLines={2}>
         {message}
       </Text>

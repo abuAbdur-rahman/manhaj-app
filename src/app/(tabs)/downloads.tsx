@@ -168,7 +168,7 @@ export default function DownloadsScreen() {
               <Pressable
                 onPress={() => playRow(item)}
                 accessibilityRole="button"
-                accessibilityLabel={`Play ${item.title}`}
+                accessibilityLabel={`${active && isTrackPlaying ? "Pause" : "Play"} ${item.title}`}
                 style={{ minHeight: 56 }}
                 className="gap-3 rounded-2xl border border-sand-200 bg-white p-4 active:opacity-90 dark:border-ink-800 dark:bg-ink-900"
               >
