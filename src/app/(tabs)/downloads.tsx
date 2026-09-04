@@ -76,9 +76,8 @@ export default function DownloadsScreen() {
   const c = Colors[scheme === "dark" ? "dark" : "light"];
   const isOnline = useNetworkStore((s) => s.isOnline);
   const currentEpisodeId = usePlayerStore((s) => s.currentEpisode?.id ?? null);
-  const storePlaying = usePlayerStore((s) => s.isPlaying);
   const playing = useIsPlaying();
-  const isTrackPlaying = playing || storePlaying;
+  const isTrackPlaying = playing;
 
   const [rows, setRows] = useState<DownloadRow[]>([]);
   const [used, setUsed] = useState(0);
