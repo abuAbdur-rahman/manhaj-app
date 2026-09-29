@@ -19,6 +19,7 @@ expo-env.d.ts
 *.mobileprovision
 
 # Metro
+temp_auto_push.bat
 .metro-health-check*
 
 # debug
@@ -41,3 +42,6 @@ example
 # generated native folders
 /ios
 /android
+.gitignore
+branch_structure.json
+config.bat
